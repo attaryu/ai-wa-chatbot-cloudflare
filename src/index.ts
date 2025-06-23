@@ -40,7 +40,7 @@ export default {
       const reply_to = payload.id;
       const session = data.session;
 
-      // Ambil env dari Worker
+      // Ambil env dari Worker (secure, tidak hardcode)
       let apiEnv;
       try {
         apiEnv = getWorkerEnv(env);
@@ -48,42 +48,27 @@ export default {
         return new Response((e as Error).message, { status: 500, headers: corsHeaders });
       }
 
-      // Fungsi untuk mengirim pesan yang sama
-      async function sendTextMessage(apiEnv: { baseUrl: string; apiKey: string }, payload: any, session: any) {
-        const chatId = payload.from;
-        const text = payload.body;
-        const participant = payload.participant;
-        const reply_to = payload.id;
-
-        // Validasi data dan participant
-        if (chatId && text && session && reply_to && participant && participant.includes("6285174346212")) {
-          const apiUrl = apiEnv.baseUrl + "/api/sendText";
-          const bodyData = {
-            chatId: chatId,
-            reply_to: reply_to,
-            text: text,
-            session: session,
-          };
-          const apiResp = await fetch(apiUrl, {
-            method: "POST",
-            headers: {
-              "accept": "application/json",
-              "Content-Type": "application/json",
-              "X-Api-Key": apiEnv.apiKey,
-            },
-            body: JSON.stringify(bodyData),
-          });
-          const apiResult = await apiResp.text();
-          return { sent: true, bodyData, apiResult };
-        }
-        return { sent: false };
-      }
-
-      // Kirim POST ke API eksternal jika data dan participant valid
-      const sendResult = await sendTextMessage(apiEnv, payload, session);
-      if (sendResult.sent) {
+      // Kirim POST ke API eksternal jika data ada dan participant sesuai
+      if (chatId && text && apiEnv.session && reply_to && participant === "6285174346212@c.us") {
+        const apiUrl = apiEnv.baseUrl + "/api/sendText";
+        const bodyData = {
+          chatId: chatId,
+          reply_to: reply_to,
+          text: text,
+          session: apiEnv.session,
+        };
+        const apiResp = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Api-Key": apiEnv.apiKey,
+          },
+          body: JSON.stringify(bodyData),
+        });
+        const apiResult = await apiResp.text();
         return new Response(
-          JSON.stringify({ status: "sent", sent: sendResult.bodyData, apiResult: sendResult.apiResult }),
+          JSON.stringify({ status: "sent", sent: bodyData, apiResult }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
