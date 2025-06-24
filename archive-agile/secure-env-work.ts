@@ -1,5 +1,3 @@
-import { getWorkerEnv } from "./config/env";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
@@ -17,17 +15,7 @@ export default {
 
     // Route home
     if (url.pathname === "/" && request.method === "GET") {
-      // Tampilkan env hasil getWorkerEnv di homepage untuk debug
-      let envDebug = {};
-      try {
-        envDebug = getWorkerEnv();
-      } catch (e: any) {
-        envDebug = { error: e.message };
-      }
-      return new Response(
-        JSON.stringify({ message: "Cloudflare Worker Webhook is ready!", env: envDebug }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return new Response("Cloudflare Worker Webhook is ready!", { status: 200, headers: corsHeaders });
     }
 
     // Route /event
@@ -42,17 +30,6 @@ export default {
       // Debug event ke log (Cloudflare dashboard log)
       console.log("Received event:", JSON.stringify(data));
 
-      // Ambil env dari helper
-      let envVars;
-      try {
-        envVars = getWorkerEnv();
-      } catch (e: any) {
-        return new Response(
-          JSON.stringify({ error: e.message }),
-          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-      }
-
       // Ambil value dari payload
       const payload = data.payload || {};
       const chatId = payload.from;
@@ -63,19 +40,19 @@ export default {
 
       // Kirim POST ke API eksternal jika data ada dan participant sesuai
       if (chatId && text && session && reply_to && participant === "6285174346212@c.us") {
-        const apiUrl = envVars.baseUrl + "/api/sendText";
+        const apiUrl = (env["API_BASE_URL"]) + "/api/sendText";
         const bodyData = {
           chatId: chatId,
           reply_to: reply_to,
           text: text,
-          session: envVars.session || session,
+          session: env["session"] || session,
         };
         const apiResp = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "accept": "application/json",
             "Content-Type": "application/json",
-            "X-Api-Key": envVars.apiKey,
+            "X-Api-Key": env["x-api-key"],
           },
           body: JSON.stringify(bodyData),
         });
