@@ -1,3 +1,5 @@
+import { KVTaskManager, TaskData, generateId } from '../utils/kvHelpers';
+
 // Interface untuk command mapping
 interface CommandMapping {
   [key: string]: string;
@@ -15,7 +17,9 @@ export async function handleTambahTugas(
   apiKey: string,
   chatId: string,
   reply_to: string,
-  fullMessage: string
+  fullMessage: string,
+  participant: string,
+  kv?: KVNamespace
 ) {
   // Ekstrak tugas dari pesan (hapus "/tambah-tugas" dan ambil sisanya)
   const taskContent = fullMessage.replace("/tambah-tugas", "").trim();
@@ -25,10 +29,102 @@ export async function handleTambahTugas(
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
   }
 
+  // Simpan ke KV database jika tersedia
+  let taskId = generateId();
+  if (kv) {
+    try {
+      const kvManager = new KVTaskManager(kv);
+      const taskData: TaskData = {
+        id: taskId,
+        task: taskContent,
+        createdAt: new Date().toISOString(),
+        chatId: chatId,
+        participant: participant,
+        completed: false
+      };
+      
+      await kvManager.saveTask(taskData);
+      console.log(`Task saved to KV with ID: ${taskId}`);
+    } catch (error) {
+      console.error('Error saving task to KV:', error);
+    }
+  }
+
   // Format response dengan tugas yang ditangkap
-  const successResponse = `✅ Tugas berhasil ditambahkan!\n\nTugas: ${taskContent}\nWaktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
+  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📝 Tugas: ${taskContent}\n🆔 ID: ${taskId}\n⏰ Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
   
   return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, successResponse);
+}
+
+// Function untuk melihat daftar tugas
+export async function handleLihatTugas(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string,
+  participant: string,
+  kv?: KVNamespace
+) {
+  if (!kv) {
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
+  }
+
+  try {
+    const kvManager = new KVTaskManager(kv);
+    const tasks = await kvManager.getAllTasks();
+    
+    if (tasks.length === 0) {
+      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "📝 Belum ada tugas yang tersimpan");
+    }
+
+    // Format daftar tugas
+    let taskList = "📋 **DAFTAR TUGAS**\n\n";
+    tasks.forEach((task, index) => {
+      const status = task.completed ? "✅" : "⏳";
+      const date = new Date(task.createdAt).toLocaleDateString('id-ID');
+      taskList += `${index + 1}. ${status} ${task.task}\n`;
+      taskList += `   🆔 ID: ${task.id}\n`;
+      taskList += `   📅 ${date}\n\n`;
+    });
+
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, taskList);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error mengambil daftar tugas");
+  }
+}
+
+// Function untuk menandai tugas selesai
+export async function handleSelesaiTugas(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string,
+  taskId: string,
+  kv?: KVNamespace
+) {
+  if (!kv) {
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
+  }
+
+  try {
+    const kvManager = new KVTaskManager(kv);
+    const task = await kvManager.getTask(taskId);
+    
+    if (!task) {
+      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan ID tersebut tidak ditemukan");
+    }
+
+    await kvManager.updateTask(taskId, { completed: true });
+    const response = `✅ Tugas berhasil ditandai selesai!\n\n📝 ${task.task}`;
+    
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
+  } catch (error) {
+    console.error('Error completing task:', error);
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error menandai tugas selesai");
+  }
 }
 
 // Helper function untuk mengirim pesan

@@ -26,6 +26,17 @@
 			"store_id": "923639bd67b74b318ee571269fdae85d",
 			"secret_name": "session"
 		}
+	],
+
+	/**
+	 * KV Namespaces
+	 * https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
+	 */
+	"kv_namespaces": [
+		{
+			"binding": "kv-database",
+			"id": "d18eb440e2cd44e0aef2780f6655f46f",
+		}
 	]
 	/**
 	 * Smart Placement
@@ -45,9 +56,6 @@
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
 	// "vars": {
-	// 	"x-api-key": "nxYLkYFvsjs6BG5j5C6cYK7KpDxuZUQg",
-	// 	"base_url": "https://waha-qxjcatc8.sumopod.in",
-	// 	"session": "session_01jx523c9fdzcaev186szgc67h"
 	// },
 	/**
 	 * Note: Use secrets to store sensitive data.
