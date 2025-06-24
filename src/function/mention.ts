@@ -1,1 +1,1 @@
-import { getWorkerEnv } from "./config/env";
+import { getWorkerEnv } from "../config/env";
