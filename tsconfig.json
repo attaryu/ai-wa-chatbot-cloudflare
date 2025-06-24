@@ -40,6 +40,6 @@
 			"./worker-configuration.d.ts"
 		]
 	},
-	"exclude": ["test"],
+	"exclude": ["src/test"],
 	"include": ["worker-configuration.d.ts", "src/**/*.ts", ".wrangler/index.ts"]
 }

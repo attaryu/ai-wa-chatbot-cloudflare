@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import worker from "../src/index";
+import worker from "../index";
 
 const env = {
   X_API_KEY: "dummy-key",

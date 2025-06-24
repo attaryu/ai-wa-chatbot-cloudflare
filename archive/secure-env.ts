@@ -1,3 +1,5 @@
+import { getWorkerEnv } from "./config/env";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
@@ -38,21 +40,29 @@ export default {
       const reply_to = payload.id;
       const session = data.session;
 
+      // Ambil env dari Worker (secure, tidak hardcode)
+      let apiEnv;
+      try {
+        apiEnv = getWorkerEnv(env);
+      } catch (e) {
+        return new Response((e as Error).message, { status: 500, headers: corsHeaders });
+      }
+
       // Kirim POST ke API eksternal jika data ada dan participant sesuai
-      if (chatId && text && session && reply_to && participant === "6285174346212@c.us") {
-        const apiUrl = "https://waha-qxjcatc8.sumopod.in/api/sendText";
+      if (chatId && text && apiEnv.session && reply_to && participant === "6285174346212@c.us") {
+        const apiUrl = apiEnv.baseUrl + "/api/sendText";
         const bodyData = {
           chatId: chatId,
           reply_to: reply_to,
           text: text,
-          session: session,
+          session: apiEnv.session,
         };
         const apiResp = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "accept": "application/json",
             "Content-Type": "application/json",
-            "X-Api-Key": env["x-api-key"] ?? "",
+            "X-Api-Key": apiEnv.apiKey,
           },
           body: JSON.stringify(bodyData),
         });
