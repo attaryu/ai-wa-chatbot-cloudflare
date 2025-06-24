@@ -1,3 +1,5 @@
+import { env } from "cloudflare:workers";
+
 // Grup WA Spesifik (wajib)
 export const GroupIds = [
   "120363399604541928@g.us",
@@ -19,22 +21,15 @@ export const PersonalChatIds = [
 //   "6281234567890@c.us", 
 ];
 
-// Fungsi untuk mengambil env dari .dev.vars (atau process.env)
-export function getWorkerEnv() {
-  const proc = (globalThis as any).process;
-  const apiKey = proc?.env?.["x_api_key"];
-  const session = proc?.env?.["session"];
-  const baseUrl = proc?.env?.["base_url"];
 
-  if (!apiKey) {
-    throw new Error("x_api_key environment variable is required");
-  }
-  if (!session) {
-    throw new Error("session environment variable is required");
-  }
-  if (!baseUrl) {
-    throw new Error("base_url environment variable is required");
-  }
+export async function getWorkerEnv(env: any) {
+  const APIkey = await env.api_key.get()
+  const baseUrl = await env.base_url_name.get()
+  const session = await env.session_name.get()
 
-  return { apiKey, session, baseUrl };
+  if (!baseUrl) throw new Error("BASE_URL environment variable is missing or empty.");
+  if (!session) throw new Error("SESSION environment variable is missing or empty.");
+  if (!APIkey) throw new Error("X_API_KEY environment variable is missing or empty.");
+
+  return { baseUrl, session, APIkey };
 }

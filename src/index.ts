@@ -1,3 +1,5 @@
+import { getWorkerEnv } from "./config/env";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
@@ -6,9 +8,7 @@ const corsHeaders = {
 
 export default {
   async fetch(request: Request, env: any): Promise<Response> {
-    const APIkey = await env.api_key.get()
-    const baseUrl = await env.base_url_name.get()
-    const session = await env.session_name.get()
+    const { APIkey, baseUrl, session } = await getWorkerEnv(env);
     const url = new URL(request.url);
 
     // Handle preflight OPTIONS
