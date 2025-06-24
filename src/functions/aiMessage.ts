@@ -133,6 +133,107 @@ export async function handleSelesaiTugas(
   }
 }
 
+// Function untuk menghapus tugas
+export async function handleHapusTugas(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string,
+  taskId: string,
+  kv?: KVNamespace
+) {
+  if (!kv) {
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
+  }
+
+  try {
+    const kvManager = new KVTaskManager(kv);
+    const task = await kvManager.getTask(taskId);
+    
+    if (!task) {
+      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan ID tersebut tidak ditemukan");
+    }
+
+    await kvManager.deleteTask(taskId);
+    const response = `🗑️ Tugas berhasil dihapus!\n\n📝 ${task.task}\n🆔 ID: ${taskId}`;
+    
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error menghapus tugas");
+  }
+}
+
+// Function untuk melihat detail tugas berdasarkan ID
+export async function handleDetailTugas(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string,
+  taskId: string,
+  kv?: KVNamespace
+) {
+  if (!kv) {
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
+  }
+
+  try {
+    const kvManager = new KVTaskManager(kv);
+    const task = await kvManager.getTask(taskId);
+    
+    if (!task) {
+      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan ID tersebut tidak ditemukan");
+    }
+
+    const status = task.completed ? "✅ Selesai" : "⏳ Belum Selesai";
+    const date = new Date(task.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    
+    const response = `📋 **DETAIL TUGAS**\n\n📝 Tugas: ${task.task}\n🆔 ID: ${task.id}\n📊 Status: ${status}\n📅 Dibuat: ${date}\n👤 Oleh: ${task.participant}`;
+    
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
+  } catch (error) {
+    console.error('Error fetching task detail:', error);
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error mengambil detail tugas");
+  }
+}
+
+// Function untuk menampilkan bantuan/help command
+export async function handleHelp(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string
+) {
+  const helpText = `🤖 **BANTUAN COMMAND BOT**
+
+📝 **MANAJEMEN TUGAS:**
+• \`/tambah-tugas [deskripsi]\` - Menambah tugas baru
+• \`/lihat-tugas\` - Melihat semua tugas
+• \`/detail [task_id]\` - Melihat detail tugas
+• \`/selesai [task_id]\` - Tandai tugas selesai
+• \`/hapus [task_id]\` - Hapus tugas
+
+👋 **SAPAAN:**
+• \`/pagi\` - Sapaan pagi
+• \`/malam\` - Sapaan malam
+
+👥 **GRUP:**
+• \`/presensi\` - Mention semua member
+
+ℹ️ **BANTUAN:**
+• \`/help\` - Tampilkan bantuan ini
+
+**Contoh penggunaan:**
+\`/tambah-tugas Beli groceries\`
+\`/selesai abc123def456\`
+\`/hapus abc123def456\``;
+
+  return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, helpText);
+}
+
 // Helper function untuk mengirim pesan
 async function sendMessage(
   baseUrl: string,
