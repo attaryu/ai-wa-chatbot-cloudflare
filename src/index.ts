@@ -104,31 +104,31 @@ export default {
       }
 
       // Kirim POST ke API eksternal jika data ada dan participant sesuai
-      if (chatId && text && reply_to && participant === "6285174346212@c.us") {
-        // const apiUrl = (env["API_BASE_URL"]) + "/api/sendText";
-        const apiUrl = baseUrl + "/api/sendText";
-        const bodyData = {
-          chatId: chatId,
-          reply_to: reply_to,
-          text: text,
-          // session: env["session"] || session,
-          session: session,
-        };
-        const apiResp = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "accept": "application/json",
-            "Content-Type": "application/json",
-            "X-Api-Key": APIkey,
-          },
-          body: JSON.stringify(bodyData),
-        });
-        const apiResult = await apiResp.text();
-        return new Response(
-          JSON.stringify({ status: "sent", sent: bodyData, apiResult }),
-          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-      }
+      // if (chatId && text && reply_to && participant === "6285174346212@c.us") {
+      //   // const apiUrl = (env["API_BASE_URL"]) + "/api/sendText";
+      //   const apiUrl = baseUrl + "/api/sendText";
+      //   const bodyData = {
+      //     chatId: chatId,
+      //     reply_to: reply_to,
+      //     text: text,
+      //     // session: env["session"] || session,
+      //     session: session,
+      //   };
+      //   const apiResp = await fetch(apiUrl, {
+      //     method: "POST",
+      //     headers: {
+      //       "accept": "application/json",
+      //       "Content-Type": "application/json",
+      //       "X-Api-Key": APIkey,
+      //     },
+      //     body: JSON.stringify(bodyData),
+      //   });
+      //   const apiResult = await apiResp.text();
+      //   return new Response(
+      //     JSON.stringify({ status: "sent", sent: bodyData, apiResult }),
+      //     { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      //   );
+      // }
 
       // Jika data tidak lengkap, balas event saja
       return new Response(
