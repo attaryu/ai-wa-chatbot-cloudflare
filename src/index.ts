@@ -17,17 +17,14 @@ export default {
 
     // Route home
     if (url.pathname === "/" && request.method === "GET") {
-      // Tampilkan env hasil getWorkerEnv di homepage untuk debug
-      let envDebug = {};
+      // Tampilkan env hasil getWorkerEnv untuk debug
+      let envVars;
       try {
-        envDebug = getWorkerEnv();
+        envVars = getWorkerEnv();
       } catch (e: any) {
-        envDebug = { error: e.message };
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
       }
-      return new Response(
-        JSON.stringify({ message: "Cloudflare Worker Webhook is ready!", env: envDebug }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return new Response(JSON.stringify({ status: "ok", env: envVars }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
     // Route /event
@@ -42,17 +39,6 @@ export default {
       // Debug event ke log (Cloudflare dashboard log)
       console.log("Received event:", JSON.stringify(data));
 
-      // Ambil env dari helper
-      let envVars;
-      try {
-        envVars = getWorkerEnv();
-      } catch (e: any) {
-        return new Response(
-          JSON.stringify({ error: e.message }),
-          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-      }
-
       // Ambil value dari payload
       const payload = data.payload || {};
       const chatId = payload.from;
@@ -60,6 +46,14 @@ export default {
       const participant = payload.participant;
       const reply_to = payload.id;
       const session = data.session;
+
+      // Ambil env dari getWorkerEnv
+      let envVars;
+      try {
+        envVars = getWorkerEnv();
+      } catch (e: any) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      }
 
       // Kirim POST ke API eksternal jika data ada dan participant sesuai
       if (chatId && text && session && reply_to && participant === "6285174346212@c.us") {
