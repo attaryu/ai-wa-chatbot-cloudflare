@@ -1,5 +1,5 @@
 import { getWorkerEnv } from "./config/env";
-import { mentionAll, handleSelamatPagi, handleSelamatMalam } from "./functions";
+import { mentionAll, basicCommands, handleTambahTugas } from "./functions";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +57,7 @@ export default {
         }
       }      if (chatId && text === "/malam" && reply_to && participant === "6285174346212@c.us") {
         try {
-          const result = await handleSelamatMalam(baseUrl, session, APIkey, chatId, reply_to);
+          const result = await basicCommands(baseUrl, session, APIkey, chatId, reply_to, "/malam");
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -72,7 +72,23 @@ export default {
 
       if (chatId && text === "/pagi" && reply_to && participant === "6285174346212@c.us") {
         try {
-          const result = await handleSelamatPagi(baseUrl, session, APIkey, chatId, reply_to);
+          const result = await basicCommands(baseUrl, session, APIkey, chatId, reply_to, "/pagi");
+          return new Response(
+            JSON.stringify(result),
+            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        } catch (e: any) {
+          return new Response(
+            JSON.stringify({ error: e.message }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+      }
+
+      // Jika text dimulai dengan /tambah-tugas, tangkap tugas yang ditambahkan
+      if (text && text.startsWith("/tambah-tugas") && chatId && reply_to && participant === "6285174346212@c.us") {
+        try {
+          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

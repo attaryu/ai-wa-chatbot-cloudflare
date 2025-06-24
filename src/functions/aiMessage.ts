@@ -5,12 +5,62 @@ interface CommandMapping {
 
 // Predefined command responses
 export const COMMAND_RESPONSES: CommandMapping = {
-  "/pagi": "selamat pagi bang, saya siap membantu anda",
-  "/malam": "selamat malam bang, ada yang bisa saya bantu?",
-  // Tambahkan command lain di sini sesuai kebutuhan
-  "/siang": "selamat siang bang, ada yang bisa dibantu?",
-  "/sore": "selamat sore bang, semoga hari anda menyenangkan!",
+  "/tambah-tugas": "Tugas berhasil ditambahkan!",
 };
+
+// Function untuk menangkap pesan yang dimulai dengan /tambah-tugas
+export async function handleTambahTugas(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string,
+  fullMessage: string
+) {
+  // Ekstrak tugas dari pesan (hapus "/tambah-tugas" dan ambil sisanya)
+  const taskContent = fullMessage.replace("/tambah-tugas", "").trim();
+  
+  if (!taskContent) {
+    const errorResponse = "Format salah! Gunakan: /tambah-tugas [deskripsi tugas]";
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
+  }
+
+  // Format response dengan tugas yang ditangkap
+  const successResponse = `✅ Tugas berhasil ditambahkan!\n\nTugas: ${taskContent}\nWaktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
+  
+  return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, successResponse);
+}
+
+// Helper function untuk mengirim pesan
+async function sendMessage(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string,
+  text: string
+) {
+  const apiUrl = baseUrl + "/api/sendText";
+  const bodyData = {
+    chatId: chatId,
+    reply_to: reply_to,
+    text: text,
+    session: session,
+  };
+
+  const apiResp = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "accept": "application/json",
+      "Content-Type": "application/json",
+      "X-Api-Key": apiKey,
+    },
+    body: JSON.stringify(bodyData),
+  });
+
+  const apiResult = await apiResp.text();
+  return { status: "sent", sent: bodyData, apiResult };
+}
 
 // Basic command handler yang fleksibel
 export async function basicCommands(
