@@ -129,6 +129,30 @@ export default {
         );
       }
 
+      if (chatId && text === "selamat pagi" && reply_to && participant === "6285174346212@c.us") {
+        const apiUrl = baseUrl + "/api/sendText";
+        const bodyData = {
+          chatId: chatId,
+          reply_to: reply_to,
+          text: "selamat pagi bang, saya siap membantu anda",
+          session: session,
+        };
+        const apiResp = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Api-Key": APIkey,
+          },
+          body: JSON.stringify(bodyData),
+        });
+        const apiResult = await apiResp.text();
+        return new Response(
+          JSON.stringify({ status: "sent", sent: bodyData, apiResult }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
       // Jika data tidak lengkap, balas event saja
       return new Response(
         JSON.stringify({ status: "received", event: data }),
