@@ -10,6 +10,23 @@
 	"observability": {
 		"enabled": true
 	},
+	"secrets_store_secrets": [
+		{
+			"binding": "api_key",
+			"store_id": "923639bd67b74b318ee571269fdae85d",
+			"secret_name": "x_api_key"
+		},
+		{
+			"binding": "base_url_name",
+			"store_id": "923639bd67b74b318ee571269fdae85d",
+			"secret_name": "base_url"
+		},
+		{
+			"binding": "session_name",
+			"store_id": "923639bd67b74b318ee571269fdae85d",
+			"secret_name": "session"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

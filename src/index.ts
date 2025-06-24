@@ -6,6 +6,9 @@ const corsHeaders = {
 
 export default {
   async fetch(request: Request, env: any): Promise<Response> {
+    const APIkey = await env.api_key.get()
+    const baseUrl = await env.base_url_name.get()
+    const session = await env.session_name.get()
     const url = new URL(request.url);
 
     // Handle preflight OPTIONS
@@ -36,23 +39,26 @@ export default {
       const text = payload.body;
       const participant = payload.participant;
       const reply_to = payload.id;
-      const session = data.session;
+      // const session = data.session;
 
       // Kirim POST ke API eksternal jika data ada dan participant sesuai
-      if (chatId && text && session && reply_to && participant === "6285174346212@c.us") {
-        const apiUrl = (env["API_BASE_URL"]) + "/api/sendText";
+      if (chatId && text && reply_to && participant === "6285174346212@c.us") {
+        // const apiUrl = (env["API_BASE_URL"]) + "/api/sendText";
+        const apiUrl = baseUrl + "/api/sendText";
         const bodyData = {
           chatId: chatId,
           reply_to: reply_to,
           text: text,
-          session: env["session"] || session,
+          // session: env["session"] || session,
+          session: session,
         };
         const apiResp = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "accept": "application/json",
             "Content-Type": "application/json",
-            "X-Api-Key": env["x-api-key"],
+            // "X-Api-Key": env["x-api-key"],
+            "X-Api-Key": APIkey,
           },
           body: JSON.stringify(bodyData),
         });
