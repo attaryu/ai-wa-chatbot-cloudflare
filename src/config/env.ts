@@ -21,9 +21,18 @@ export const PersonalChatIds = [
 
 // Fungsi untuk mengambil env dari Cloudflare Worker
 export function getWorkerEnv(env: any) {
-  const apiKey = env["X_API_KEY"] || env["x-api-key"]; //wajib
-  const session = env["SESSION"] || env["session"]; //nggak perlu diset juga nggak papa
-  const baseUrl = env["BASE_URL"] || env["base-url"]; //wajib
+  // Ambil dari env Worker (Cloudflare) lebih dulu
+  let apiKey = env["X_API_KEY"] || env["x-api-key"];
+  let session = env["SESSION"] || env["session"];
+  let baseUrl = env["BASE_URL"] || env["base-url"];
+
+  // Fallback ke globalThis.process.env (untuk dev lokal Node.js/.dev.vars)
+  const proc = (globalThis as any).process;
+  if (proc && proc.env) {
+    apiKey = apiKey || proc.env["x-api-key"] || proc.env["X_API_KEY"];
+    session = session || proc.env["session"] || proc.env["SESSION"];
+    baseUrl = baseUrl || proc.env["base_url"] || proc.env["BASE_URL"];
+  }
 
   if (!apiKey) {
     throw new Error("X_API_KEY environment variable is required");
