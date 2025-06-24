@@ -1,5 +1,3 @@
-import { getWorkerEnv } from "./config/env";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
@@ -17,14 +15,7 @@ export default {
 
     // Route home
     if (url.pathname === "/" && request.method === "GET") {
-      // Tampilkan env hasil getWorkerEnv untuk debug
-      let envVars;
-      try {
-        envVars = getWorkerEnv();
-      } catch (e: any) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
-      }
-      return new Response(JSON.stringify({ status: "ok", env: envVars }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      return new Response("Cloudflare Worker Webhook is ready!", { status: 200, headers: corsHeaders });
     }
 
     // Route /event
@@ -47,29 +38,21 @@ export default {
       const reply_to = payload.id;
       const session = data.session;
 
-      // Ambil env dari getWorkerEnv
-      let envVars;
-      try {
-        envVars = getWorkerEnv();
-      } catch (e: any) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
-      }
-
       // Kirim POST ke API eksternal jika data ada dan participant sesuai
       if (chatId && text && session && reply_to && participant === "6285174346212@c.us") {
-        const apiUrl = envVars.baseUrl + "/api/sendText";
+        const apiUrl = (env["API_BASE_URL"]) + "/api/sendText";
         const bodyData = {
           chatId: chatId,
           reply_to: reply_to,
           text: text,
-          session: envVars.session || session,
+          session: env["session"] || session,
         };
         const apiResp = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "accept": "application/json",
             "Content-Type": "application/json",
-            "X-Api-Key": envVars.apiKey,
+            "X-Api-Key": env["x-api-key"],
           },
           body: JSON.stringify(bodyData),
         });
