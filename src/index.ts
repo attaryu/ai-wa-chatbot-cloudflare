@@ -40,19 +40,19 @@ export default {
 
       // Kirim POST ke API eksternal jika data ada dan participant sesuai
       if (chatId && text && session && reply_to && participant === "6285174346212@c.us") {
-        const apiUrl = "https://waha-qxjcatc8.sumopod.in/api/sendText";
+        const apiUrl = (env["API_BASE_URL"]) + "/api/sendText";
         const bodyData = {
           chatId: chatId,
           reply_to: reply_to,
           text: text,
-          session: env["session"] || "",
+          session: env["session"] || session,
         };
         const apiResp = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "accept": "application/json",
             "Content-Type": "application/json",
-            "X-Api-Key": env["x-api-key"] ?? "",
+            "X-Api-Key": env["x-api-key"],
           },
           body: JSON.stringify(bodyData),
         });
