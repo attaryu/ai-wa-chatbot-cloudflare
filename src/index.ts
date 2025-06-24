@@ -86,7 +86,7 @@ export default {
       }      // Jika text dimulai dengan /tambah-tugas, tangkap tugas yang ditambahkan
       if (text && text.startsWith("/tambah-tugas") && chatId && reply_to && participant === "6285174346212@c.us") {
         try {
-          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env.MY_KV);
+          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env["kv-database"]);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -102,7 +102,7 @@ export default {
       // Jika text adalah /lihat-tugas, tampilkan daftar tugas
       if (text === "/lihat-tugas" && chatId && reply_to && participant === "6285174346212@c.us") {
         try {
-          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env.MY_KV);
+          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env["kv-database"]);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -119,7 +119,7 @@ export default {
       if (text && text.startsWith("/selesai ") && chatId && reply_to && participant === "6285174346212@c.us") {
         try {
           const taskId = text.replace("/selesai ", "").trim();
-          const result = await handleSelesaiTugas(baseUrl, session, APIkey, chatId, reply_to, taskId, env.MY_KV);
+          const result = await handleSelesaiTugas(baseUrl, session, APIkey, chatId, reply_to, taskId, env["kv-database"]);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

@@ -28,9 +28,11 @@ export async function handleTambahTugas(
     const errorResponse = "Format salah! Gunakan: /tambah-tugas [deskripsi tugas]";
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
   }
-
   // Simpan ke KV database jika tersedia
   let taskId = generateId();
+  console.log(`Attempting to save task with ID: ${taskId}`);
+  console.log(`KV namespace available:`, !!kv);
+  
   if (kv) {
     try {
       const kvManager = new KVTaskManager(kv);
@@ -43,11 +45,15 @@ export async function handleTambahTugas(
         completed: false
       };
       
+      console.log(`Saving task data:`, JSON.stringify(taskData));
       await kvManager.saveTask(taskData);
-      console.log(`Task saved to KV with ID: ${taskId}`);
+      console.log(`Task saved to KV successfully with ID: ${taskId}`);
     } catch (error) {
       console.error('Error saving task to KV:', error);
+      console.error('Error details:', error instanceof Error ? error.message : String(error));
     }
+  } else {
+    console.log('KV namespace not available - task not saved to database');
   }
 
   // Format response dengan tugas yang ditangkap
