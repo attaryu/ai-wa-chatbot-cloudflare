@@ -17,7 +17,22 @@ export default {
 
     // Route home
     if (url.pathname === "/" && request.method === "GET") {
-      return new Response("Cloudflare Worker Webhook is ready!", { status: 200, headers: corsHeaders });
+      let envInfo = {};
+      let envParsed = {};
+      try {
+        envInfo = env;
+        envParsed = getWorkerEnv(env);
+      } catch (e) {
+        envParsed = { error: (e as Error).message };
+      }
+      return new Response(
+        JSON.stringify({
+          message: "Cloudflare Worker Webhook is ready!",
+          env: envInfo,
+          parsedEnv: envParsed
+        }, null, 2),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     // Route /event
@@ -31,6 +46,13 @@ export default {
 
       // Debug event ke log (Cloudflare dashboard log)
       console.log("Received event:", JSON.stringify(data));
+      console.log("ENV Worker (raw env):", JSON.stringify(env));
+      try {
+        const debugEnv = getWorkerEnv(env);
+        console.log("ENV Worker (getWorkerEnv):", JSON.stringify(debugEnv));
+      } catch (e) {
+        console.log("ENV Worker (getWorkerEnv) ERROR:", (e as Error).message);
+      }
 
       // Ambil value dari payload
       const payload = data.payload || {};
