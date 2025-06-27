@@ -1,4 +1,4 @@
-import { KVTaskManager, TaskData, generateId } from '../utils/kvHelpers';
+import { KVAssignmentManager, AssignmentData, generateId } from '../utils/kvHelpers';
 
 // Interface untuk command mapping
 interface CommandMapping {
@@ -21,44 +21,35 @@ export async function handleTambahTugas(
   participant: string,
   kv?: KVNamespace
 ) {
-  // Ekstrak tugas dari pesan (hapus "/tambah-tugas" dan ambil sisanya)
-  const taskContent = fullMessage.replace("/tambah-tugas", "").trim();
-  
-  if (!taskContent) {
-    const errorResponse = "Format salah! Gunakan: /tambah-tugas [deskripsi tugas]";
+  // Ekstrak nama mata kuliah dan deskripsi dari pesan
+  // Format: /tambah-tugas [nama mata kuliah]; [deskripsi]
+  const content = fullMessage.replace("/tambah-tugas", "").trim();
+  const [namaMataKuliah, ...descArr] = content.split(';');
+  const deskripsi = descArr.join(';').trim();
+
+  if (!namaMataKuliah || !deskripsi) {
+    const errorResponse = "Format salah! Gunakan: /tambah-tugas [nama mata kuliah]; [deskripsi tugas]";
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
   }
-  // Simpan ke KV database jika tersedia
-  let taskId = generateId();
-  console.log(`Attempting to save task with ID: ${taskId}`);
-  console.log(`KV namespace available:`, !!kv);
-  
+
+  let assignmentId = generateId();
   if (kv) {
     try {
-      const kvManager = new KVTaskManager(kv);
-      const taskData: TaskData = {
-        id: taskId,
-        task: taskContent,
+      const kvManager = new KVAssignmentManager(kv);
+      const assignmentData: AssignmentData = {
+        id: assignmentId,
+        namaMataKuliah: namaMataKuliah.trim(),
+        deskripsi,
         createdAt: new Date().toISOString(),
-        chatId: chatId,
-        participant: participant,
-        completed: false
+        chatId,
+        participant
       };
-      
-      console.log(`Saving task data:`, JSON.stringify(taskData));
-      await kvManager.saveTask(taskData);
-      console.log(`Task saved to KV successfully with ID: ${taskId}`);
+      await kvManager.saveAssignment(assignmentData);
     } catch (error) {
-      console.error('Error saving task to KV:', error);
-      console.error('Error details:', error instanceof Error ? error.message : String(error));
+      console.error('Error saving assignment to KV:', error);
     }
-  } else {
-    console.log('KV namespace not available - task not saved to database');
   }
-
-  // Format response dengan tugas yang ditangkap
-  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📝 Tugas: ${taskContent}\n🆔 ID: ${taskId}\n⏰ Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
-  
+  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah.trim()}\n📝 Deskripsi: ${deskripsi}\n⏰ Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
   return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, successResponse);
 }
 
@@ -75,61 +66,21 @@ export async function handleLihatTugas(
   if (!kv) {
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
-
   try {
-    const kvManager = new KVTaskManager(kv);
-    const tasks = await kvManager.getAllTasks();
-    
-    if (tasks.length === 0) {
+    const kvManager = new KVAssignmentManager(kv);
+    const assignments = await kvManager.getAllAssignments();
+    if (assignments.length === 0) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "📝 Belum ada tugas yang tersimpan");
     }
-
-    // Format daftar tugas
-    let taskList = "📋 **DAFTAR TUGAS**\n\n";
-    tasks.forEach((task, index) => {
-      const status = task.completed ? "✅" : "⏳";
-      const date = new Date(task.createdAt).toLocaleDateString('id-ID');
-      taskList += `${index + 1}. ${status} ${task.task}\n`;
-      taskList += `   🆔 ID: ${task.id}\n`;
-      taskList += `   📅 ${date}\n\n`;
+    let list = "📋 **DAFTAR TUGAS**\n\n";
+    assignments.forEach((item, idx) => {
+      const date = new Date(item.createdAt).toLocaleDateString('id-ID');
+      list += `${idx + 1}. 📚 ${item.namaMataKuliah}\n   📝 ${item.deskripsi}\n   📅 ${date}\n\n`;
     });
-
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, taskList);
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, list);
   } catch (error) {
-    console.error('Error fetching tasks:', error);
+    console.error('Error fetching assignments:', error);
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error mengambil daftar tugas");
-  }
-}
-
-// Function untuk menandai tugas selesai
-export async function handleSelesaiTugas(
-  baseUrl: string,
-  session: string,
-  apiKey: string,
-  chatId: string,
-  reply_to: string,
-  taskId: string,
-  kv?: KVNamespace
-) {
-  if (!kv) {
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
-  }
-
-  try {
-    const kvManager = new KVTaskManager(kv);
-    const task = await kvManager.getTask(taskId);
-    
-    if (!task) {
-      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan ID tersebut tidak ditemukan");
-    }
-
-    await kvManager.updateTask(taskId, { completed: true });
-    const response = `✅ Tugas berhasil ditandai selesai!\n\n📝 ${task.task}`;
-    
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
-  } catch (error) {
-    console.error('Error completing task:', error);
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error menandai tugas selesai");
   }
 }
 
@@ -140,27 +91,23 @@ export async function handleHapusTugas(
   apiKey: string,
   chatId: string,
   reply_to: string,
-  taskId: string,
+  assignmentId: string,
   kv?: KVNamespace
 ) {
   if (!kv) {
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
-
   try {
-    const kvManager = new KVTaskManager(kv);
-    const task = await kvManager.getTask(taskId);
-    
-    if (!task) {
+    const kvManager = new KVAssignmentManager(kv);
+    const assignment = await kvManager.getAssignment(assignmentId);
+    if (!assignment) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan ID tersebut tidak ditemukan");
     }
-
-    await kvManager.deleteTask(taskId);
-    const response = `🗑️ Tugas berhasil dihapus!\n\n📝 ${task.task}\n🆔 ID: ${taskId}`;
-    
+    await kvManager.deleteAssignment(assignmentId);
+    const response = `🗑️ Tugas berhasil dihapus!\n\n📚 Mata Kuliah: ${assignment.namaMataKuliah}\n📝 Deskripsi: ${assignment.deskripsi}`;
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
   } catch (error) {
-    console.error('Error deleting task:', error);
+    console.error('Error deleting assignment:', error);
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error menghapus tugas");
   }
 }
@@ -172,29 +119,23 @@ export async function handleDetailTugas(
   apiKey: string,
   chatId: string,
   reply_to: string,
-  taskId: string,
+  assignmentId: string,
   kv?: KVNamespace
 ) {
   if (!kv) {
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
-
   try {
-    const kvManager = new KVTaskManager(kv);
-    const task = await kvManager.getTask(taskId);
-    
-    if (!task) {
+    const kvManager = new KVAssignmentManager(kv);
+    const assignment = await kvManager.getAssignment(assignmentId);
+    if (!assignment) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan ID tersebut tidak ditemukan");
     }
-
-    const status = task.completed ? "✅ Selesai" : "⏳ Belum Selesai";
-    const date = new Date(task.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    
-    const response = `📋 **DETAIL TUGAS**\n\n📝 Tugas: ${task.task}\n🆔 ID: ${task.id}\n📊 Status: ${status}\n📅 Dibuat: ${date}\n👤 Oleh: ${task.participant}`;
-    
+    const date = new Date(assignment.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    const response = `📋 **DETAIL TUGAS**\n\n📚 Mata Kuliah: ${assignment.namaMataKuliah}\n📝 Deskripsi: ${assignment.deskripsi}\n📅 Dibuat: ${date}\n👤 Oleh: ${assignment.participant}`;
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
   } catch (error) {
-    console.error('Error fetching task detail:', error);
+    console.error('Error fetching assignment detail:', error);
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error mengambil detail tugas");
   }
 }
