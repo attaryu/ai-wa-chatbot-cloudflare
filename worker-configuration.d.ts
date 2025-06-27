@@ -14,7 +14,7 @@ declare namespace Cloudflare {
 }
 interface Env extends Cloudflare.Env {}
 
-// Begin runtime types
+// Begin runtime typesa
 /*! *****************************************************************************
 Copyright (c) Cloudflare. All rights reserved.
 Copyright (c) Microsoft Corporation. All rights reserved.
