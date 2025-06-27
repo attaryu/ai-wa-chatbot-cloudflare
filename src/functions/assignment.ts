@@ -75,8 +75,8 @@ export async function handleLihatTugas(
     }
     let list = "📋 *DAFTAR TUGAS*\n\n";
     assignments.forEach((item, idx) => {
-      const date = new Date(item.createdAt).toLocaleDateString('id-ID');
-      list += `${idx + 1}. 📚 ${item.namaMataKuliah}\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${item.deadline || '-'}\n   📅 Ditambahkan: ${date}\n\n`;
+      const time = new Date(item.createdAt).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
+      list += `${idx + 1}. 📚 ${item.namaMataKuliah}\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${item.deadline || '-'}\n   🕒 Timestamp: ${time}\n\n`;
     });
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, list);
   } catch (error) {
@@ -244,25 +244,4 @@ export async function basicCommands(
 
   const apiResult = await apiResp.text();
   return { status: "sent", sent: bodyData, apiResult };
-}
-
-// Wrapper functions untuk backward compatibility (opsional) (dan gakepake)
-export async function handleSelamatPagi(
-  baseUrl: string,
-  session: string,
-  apiKey: string,
-  chatId: string,
-  reply_to: string
-) {
-  return await basicCommands(baseUrl, session, apiKey, chatId, reply_to, "/pagi");
-}
-
-export async function handleSelamatMalam(
-  baseUrl: string,
-  session: string,
-  apiKey: string,
-  chatId: string,
-  reply_to: string
-) {
-  return await basicCommands(baseUrl, session, apiKey, chatId, reply_to, "/malam");
 }

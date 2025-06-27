@@ -1,4 +1,4 @@
 // Import semua fungsi dari berbagai file
 export { getGroupParticipants, mentionAll } from './groupUtils';
 export { basicCommands, COMMAND_RESPONSES } from './messageHandlers';
-export { handleTambahTugas, handleLihatTugas, handleSelesaiTugas, handleHapusTugas, handleDetailTugas, handleHelp } from './aiMessage';
+export { handleTambahTugas, handleLihatTugas, handleHapusTugas, handleDetailTugas, handleHelp } from './assignment';
