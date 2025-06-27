@@ -19,16 +19,15 @@ export async function handleTambahTugas(
   reply_to: string,
   fullMessage: string,
   participant: string,
-  kv?: KVNamespace
+  kv?: KVNamespace,
+  groupId?: string // tambahkan parameter groupId
 ) {
-  // Ekstrak nama mata kuliah dan deskripsi dari pesan
-  // Format: /tambah-tugas [nama mata kuliah]; [deskripsi]
+  // Format: /tambah-tugas [mata kuliah], [deskripsi], [deadline]
   const content = fullMessage.replace("/tambah-tugas", "").trim();
-  const [namaMataKuliah, ...descArr] = content.split(';');
-  const deskripsi = descArr.join(';').trim();
+  const [namaMataKuliah, deskripsi, deadline] = content.split(',').map(s => s.trim());
 
-  if (!namaMataKuliah || !deskripsi) {
-    const errorResponse = "Format salah! Gunakan: /tambah-tugas [nama mata kuliah]; [deskripsi tugas]";
+  if (!namaMataKuliah || !deskripsi || !deadline) {
+    const errorResponse = "Format salah! Gunakan: /tambah-tugas [mata kuliah], [deskripsi], [deadline]";
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
   }
 
@@ -38,18 +37,20 @@ export async function handleTambahTugas(
       const kvManager = new KVAssignmentManager(kv);
       const assignmentData: AssignmentData = {
         id: assignmentId,
-        namaMataKuliah: namaMataKuliah.trim(),
+        namaMataKuliah,
         deskripsi,
         createdAt: new Date().toISOString(),
         chatId,
-        participant
-      };
+        participant,
+        deadline,
+        groupId: groupId || chatId // simpan groupId dari payload.from jika ada
+      } as any;
       await kvManager.saveAssignment(assignmentData);
     } catch (error) {
       console.error('Error saving assignment to KV:', error);
     }
   }
-  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah.trim()}\n📝 Deskripsi: ${deskripsi}\n⏰ Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
+  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah}\n📝 Deskripsi: ${deskripsi}\n⏰ Deadline: ${deadline}\n🗓️ Ditambahkan: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
   return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, successResponse);
 }
 
@@ -72,10 +73,10 @@ export async function handleLihatTugas(
     if (assignments.length === 0) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "📝 Belum ada tugas yang tersimpan");
     }
-    let list = "📋 **DAFTAR TUGAS**\n\n";
+    let list = "📋 *DAFTAR TUGAS*\n\n";
     assignments.forEach((item, idx) => {
       const date = new Date(item.createdAt).toLocaleDateString('id-ID');
-      list += `${idx + 1}. 📚 ${item.namaMataKuliah}\n   📝 ${item.deskripsi}\n   📅 ${date}\n\n`;
+      list += `${idx + 1}. 📚 ${item.namaMataKuliah}\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${item.deadline || '-'}\n   📅 Ditambahkan: ${date}\n\n`;
     });
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, list);
   } catch (error) {

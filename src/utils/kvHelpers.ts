@@ -6,6 +6,8 @@ export interface AssignmentData {
   createdAt: string;
   chatId: string;
   participant: string;
+  deadline?: string; // opsional agar kompatibel dengan data baru
+  groupId?: string; // tambahkan groupId
 }
 
 // KV Operations untuk Assignment (Task/Reminder)
