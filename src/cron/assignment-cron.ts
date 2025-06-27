@@ -34,4 +34,36 @@ export default {
       }
     }
   },
+
+  // Fungsi untuk deteksi toxic pada pesan masuk
+  async onMessage(payload: any, env: any) {
+    const { body, from } = payload;
+    if (body && containsToxicWord(body)) {
+      const warning = '⚠️ Pesan mengandung kata tidak pantas. Mohon jaga etika di grup ini.';
+      await fetch(`${env.base_url}/api/sendText`, {
+        method: "POST",
+        headers: {
+          "accept": "application/json",
+          "Content-Type": "application/json",
+          "X-Api-Key": env.x_api_key,
+        },
+        body: JSON.stringify({
+          chatId: from,
+          reply_to: null,
+          text: warning,
+          session: env.session,
+        }),
+      });
+    }
+  },
 };
+
+// Fungsi deteksi kata toxic sederhana
+const TOXIC_WORDS = [
+  'anjing', 'babi', 'bangsat', 'kontol', 'goblok', 'tolol', 'kampret', 'asu', 'ngentot', 'memek', 'perek', 'idiot', 'bodoh'
+];
+
+export function containsToxicWord(text: string): boolean {
+  const lower = text.toLowerCase();
+  return TOXIC_WORDS.some(word => lower.includes(word));
+}
