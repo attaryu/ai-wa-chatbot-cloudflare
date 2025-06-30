@@ -1,5 +1,5 @@
 import { getWorkerEnv } from "./config/env";
-import { mentionAll, basicCommands, handleTambahTugas, handleLihatTugas, handleSelesaiTugas, handleHapusTugas, handleDetailTugas, handleHelp } from "./functions";
+import { mentionAll, basicCommands, handleTambahTugas, handleLihatTugas, handleHapusTugas, handleDetailTugas, handleHelp } from "./functions";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -115,22 +115,6 @@ export default {
         }
       }
 
-      // Jika text dimulai dengan /selesai, tandai tugas selesai
-      if (text && text.startsWith("/selesai ") && chatId && reply_to && participant === "6285174346212@c.us") {
-        try {
-          const taskId = text.replace("/selesai ", "").trim();
-          const result = await handleSelesaiTugas(baseUrl, session, APIkey, chatId, reply_to, taskId, env["kv-database"]);
-          return new Response(
-            JSON.stringify(result),
-            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-          );
-        } catch (e: any) {
-          return new Response(
-            JSON.stringify({ error: e.message }),
-            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-          );
-        }
-      }
 
       // Jika text dimulai dengan /hapus, hapus tugas berdasarkan ID
       if (text && text.startsWith("/hapus ") && chatId && reply_to && participant === "6285174346212@c.us") {
