@@ -42,7 +42,7 @@ export default {
       const reply_to = payload.id;
 
       // Jika text adalah /presensi, mention semua member
-      if (text === "/presensi" && chatId && participant === "6285174346212@c.us") {
+      if (text === "/presensi" && chatId) {
         try {
           const mentionResult = await mentionAll(baseUrl, session, chatId, APIkey);
           return new Response(
@@ -55,7 +55,8 @@ export default {
             { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
-      }      if (chatId && text === "/malam" && reply_to && participant === "6285174346212@c.us") {
+      }
+      if (chatId && text === "/malam" && reply_to && participant === "6285174346212@c.us") {
         try {
           const result = await basicCommands(baseUrl, session, APIkey, chatId, reply_to, "/malam");
           return new Response(
