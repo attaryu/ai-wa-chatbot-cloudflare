@@ -152,7 +152,7 @@ export default {
       }
 
       // Jika text adalah /help, tampilkan bantuan
-      if (text === "/help" && chatId && reply_to && participant === "6285174346212@c.us") {
+      if (text === "/help" && chatId && reply_to) {
         try {
           const result = await handleHelp(baseUrl, session, APIkey, chatId, reply_to);
           return new Response(
