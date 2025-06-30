@@ -33,14 +33,14 @@ export async function aiCronTest(env: any) {
     });
 
     // Target group chat ID (ganti dengan ID grup yang sesuai)
-    const targetChatId = "120363399604541928@g.us"; // ID grup target
+    const targetChatId = "6285174346212"; // ID grup target
 
     // Send message to WhatsApp
     const apiUrl = "https://waha-qxjcatc8.sumopod.in/api/sendText";
     const bodyData = {
       chatId: targetChatId,
       reply_to: null,
-      text: `🤖 *Tips Motivasi AI*\n\n${text}\n\n⏰ ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`,
+      text: text,
       session: session,
     };
 
