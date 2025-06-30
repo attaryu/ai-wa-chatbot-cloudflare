@@ -4,10 +4,8 @@ export interface AssignmentData {
   namaMataKuliah: string;
   deskripsi: string;
   createdAt: string;
-  chatId: string;
   participant: string;
-  deadline?: string; // opsional agar kompatibel dengan data baru
-  groupId?: string; // tambahkan groupId
+  deadline?: Date; // ubah ke Date object
 }
 
 // KV Operations untuk Assignment (Task/Reminder)
@@ -17,14 +15,25 @@ export class KVAssignmentManager {
   // Simpan assignment baru
   async saveAssignment(data: AssignmentData): Promise<void> {
     const key = `assignment:${data.id}`;
-    await this.kv.put(key, JSON.stringify(data));
+    // Convert Date object ke string saat simpan
+    const dataToSave = {
+      ...data,
+      deadline: data.deadline ? data.deadline.toISOString() : undefined
+    };
+    await this.kv.put(key, JSON.stringify(dataToSave));
   }
 
   // Ambil assignment berdasarkan ID
   async getAssignment(id: string): Promise<AssignmentData | null> {
     const key = `assignment:${id}`;
     const data = await this.kv.get(key);
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+    const parsed = JSON.parse(data);
+    // Convert string deadline kembali ke Date object
+    if (parsed.deadline) {
+      parsed.deadline = new Date(parsed.deadline);
+    }
+    return parsed;
   }
 
   // Ambil semua assignment
@@ -34,7 +43,12 @@ export class KVAssignmentManager {
     for (const key of list.keys) {
       const data = await this.kv.get(key.name);
       if (data) {
-        assignments.push(JSON.parse(data));
+        const parsed = JSON.parse(data);
+        // Convert string deadline kembali ke Date object
+        if (parsed.deadline) {
+          parsed.deadline = new Date(parsed.deadline);
+        }
+        assignments.push(parsed);
       }
     }
     return assignments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -46,7 +60,11 @@ export class KVAssignmentManager {
     for (const key of list.keys) {
       const data = await this.kv.get(key.name);
       if (data) {
-        const assignment: AssignmentData = JSON.parse(data);
+        const assignment = JSON.parse(data);
+        // Convert string deadline kembali ke Date object
+        if (assignment.deadline) {
+          assignment.deadline = new Date(assignment.deadline);
+        }
         if (assignment.namaMataKuliah === namaMataKuliah) {
           return assignment;
         }

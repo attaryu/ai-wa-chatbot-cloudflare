@@ -8,14 +8,14 @@ export default {
     const assignments = await kvManager.getAllAssignments();
     const today = new Date();
     for (const assignment of assignments) {
-      if (!assignment.deadline || !assignment.groupId) continue;
+      if (!assignment.deadline) continue;
       // Deadline format bebas, coba parse
       const deadlineDate = new Date(assignment.deadline);
       if (isNaN(deadlineDate.getTime())) continue;
       // H-1
       const diff = Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       if (diff === 1) {
-        // Kirim pesan ke grup
+        // Kirim pesan ke grup (hardcode grup utama karena tidak ada groupId di data)
         const message = `⏰ *Reminder Tugas Besok!*\n\n📚 Mata Kuliah: ${assignment.namaMataKuliah}\n📝 Deskripsi: ${assignment.deskripsi}\n⏰ Deadline: ${assignment.deadline}`;
         await fetch(`${env.base_url}/api/sendText`, {
           method: "POST",
@@ -25,7 +25,7 @@ export default {
             "X-Api-Key": env.x_api_key,
           },
           body: JSON.stringify({
-            chatId: assignment.groupId,
+            chatId: "120363399604541928@g.us", // hardcode grup utama
             reply_to: null,
             text: message,
             session: env.session,

@@ -41,8 +41,8 @@ export default {
       const participant = payload.participant;
       const reply_to = payload.id;
 
-      // Jika text adalah /presensi, mention semua member
-      if (text === "/presensi" && chatId) {
+      // Jika text dimulai dengan /presensi, mention semua member
+      if (text && text.startsWith("/presensi") && chatId && participant === "6285174346212@c.us") {
         try {
           const mentionResult = await mentionAll(baseUrl, session, chatId, APIkey);
           return new Response(
@@ -117,11 +117,11 @@ export default {
       }
 
 
-      // Jika text dimulai dengan /hapus, hapus tugas berdasarkan ID
+      // Jika text dimulai dengan /hapus, hapus tugas berdasarkan nama mata kuliah
       if (text && text.startsWith("/hapus ") && chatId && reply_to && participant === "6285174346212@c.us") {
         try {
-          const taskId = text.replace("/hapus ", "").trim();
-          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, taskId, env["kv-database"]);
+          const namaMataKuliah = text.replace("/hapus ", "").trim();
+          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaMataKuliah, env["kv-database"]);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -134,11 +134,11 @@ export default {
         }
       }
 
-      // Jika text dimulai dengan /detail, lihat detail tugas berdasarkan ID
+      // Jika text dimulai dengan /detail, lihat detail tugas berdasarkan nama mata kuliah
       if (text && text.startsWith("/detail ") && chatId && reply_to && participant === "6285174346212@c.us") {
         try {
-          const taskId = text.replace("/detail ", "").trim();
-          const result = await handleDetailTugas(baseUrl, session, APIkey, chatId, reply_to, taskId, env["kv-database"]);
+          const namaMataKuliah = text.replace("/detail ", "").trim();
+          const result = await handleDetailTugas(baseUrl, session, APIkey, chatId, reply_to, namaMataKuliah, env["kv-database"]);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

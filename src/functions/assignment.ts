@@ -19,8 +19,7 @@ export async function handleTambahTugas(
   reply_to: string,
   fullMessage: string,
   participant: string,
-  kv?: KVNamespace,
-  groupId?: string // tambahkan parameter groupId
+  kv?: KVNamespace
 ) {
   // Format: /tambah-tugas [mata kuliah], [deskripsi], [deadline]
   const content = fullMessage.replace("/tambah-tugas", "").trim();
@@ -40,11 +39,9 @@ export async function handleTambahTugas(
         namaMataKuliah,
         deskripsi,
         createdAt: new Date().toISOString(),
-        chatId,
         participant,
-        deadline,
-        groupId: groupId || chatId // simpan groupId dari payload.from jika ada
-      } as any;
+        deadline: new Date(deadline)
+      };
       await kvManager.saveAssignment(assignmentData);
     } catch (error) {
       console.error('Error saving assignment to KV:', error);
