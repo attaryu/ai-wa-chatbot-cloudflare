@@ -33,7 +33,7 @@ export async function aiCronTest(env: any) {
     });
 
     // Target group chat ID (ganti dengan ID grup yang sesuai)
-    const targetChatId = "120363199657300353@g.us"; // ID grup target
+    const targetChatId = "120363399604541928@g.us"; // ID grup target
 
     // Send message to WhatsApp
     const apiUrl = baseUrl + "/api/sendText";
