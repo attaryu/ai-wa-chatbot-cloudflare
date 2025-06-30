@@ -1,5 +1,5 @@
 import { getWorkerEnv } from "./config/env";
-import { mentionAll, basicCommands, handleTambahTugas, handleLihatTugas, handleHapusTugas, handleDetailTugas, handleHelp } from "./functions";
+import { mentionAll, basicCommands, handleTambahTugas, handleLihatTugas, handleHapusTugas, handleDetailTugas, handleHelp, handleAIResponse } from "./functions";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -154,6 +154,22 @@ export default {
       if (text === "/help" && chatId && reply_to && participant === "6285174346212@c.us") {
         try {
           const result = await handleHelp(baseUrl, session, APIkey, chatId, reply_to);
+          return new Response(
+            JSON.stringify(result),
+            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        } catch (e: any) {
+          return new Response(
+            JSON.stringify({ error: e.message }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+      }
+
+      // Jika text dimulai dengan /ai, proses AI
+      if (text && text.startsWith("/ai") && chatId && reply_to && participant === "6285174346212@c.us") {
+        try {
+          const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
