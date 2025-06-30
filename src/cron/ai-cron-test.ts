@@ -1,5 +1,14 @@
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from 'ai';
+
 export async function aiCronTest(env: any) {
   try {
+    // Get OpenRouter API key from environment (secret store)
+    const openrouterKey = env.openrouter_key ? await env.openrouter_key.get() : undefined;
+    if (!openrouterKey) {
+      console.error('OpenRouter API key not found in environment');
+      return;
+    }
 
     // Get WhatsApp API credentials (plain string bindings)
     const baseUrl = env.base_url_name;
@@ -16,7 +25,7 @@ export async function aiCronTest(env: any) {
     const bodyData = {
       chatId: "6285174346212",
       reply_to: null,
-      text: "halo bang",
+      text: openrouterKey,
       session: "session_01jx523c9fdzcaev186szgc67h",
     };
 
