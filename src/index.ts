@@ -9,7 +9,7 @@ const corsHeaders = {
 
 export default {
   async fetch(request: Request, env: any): Promise<Response> {
-    const { APIkey, baseUrl, session } = await getWorkerEnv(env);
+    const { APIkey, baseUrl, session, openrouterKey } = await getWorkerEnv(env);
     const url = new URL(request.url);
 
     // Handle preflight OPTIONS
@@ -169,7 +169,7 @@ export default {
       // Jika text dimulai dengan /ai, proses AI
       if (text && text.startsWith("/ai") && chatId && reply_to && participant === "6285174346212@c.us") {
         try {
-          const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text);
+          const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text, openrouterKey);
           return new Response(
             JSON.stringify(result),
             { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

@@ -25,6 +25,11 @@
 			"binding": "session_name",
 			"store_id": "923639bd67b74b318ee571269fdae85d",
 			"secret_name": "session"
+		},
+		{
+			"binding": "openrouter_key",
+			"store_id": "923639bd67b74b318ee571269fdae85d",
+			"secret_name": "openrouter_api_key"
 		}
 	],
 

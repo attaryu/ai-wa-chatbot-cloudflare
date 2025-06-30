@@ -1,9 +1,7 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { generateText } from 'ai';
 
-const openrouter = createOpenRouter({
-  apiKey: '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',
-});
+let openrouter: any;
 
 interface CommandMapping {
   [key: string]: string;
@@ -23,8 +21,14 @@ export async function basicCommands(
   reply_to: string,
   command: string,
   customResponse?: string,
-  fullMessage?: string // tambahkan argumen untuk pesan penuh
+  fullMessage?: string, // tambahkan argumen untuk pesan penuh
+  openRouterKey?: string // tambahkan argumen untuk openrouter key
 ) {
+  // Initialize openrouter dengan API key dari environment
+  if (openRouterKey) {
+    openrouter = createOpenRouter({ apiKey: openRouterKey });
+  }
+  
   // Gunakan custom response jika ada, atau ambil dari predefined responses
   let prompt = customResponse || COMMAND_RESPONSES[command];
 
@@ -72,7 +76,8 @@ export async function handleAIResponse(
   apiKey: string,
   chatId: string,
   reply_to: string,
-  fullMessage?: string // tambahkan argumen untuk pesan penuh
+  fullMessage?: string, // tambahkan argumen untuk pesan penuh
+  openRouterKey?: string // tambahkan argumen untuk openrouter key
 ) {
-  return await basicCommands(baseUrl, session, apiKey, chatId, reply_to, "/ai", undefined, fullMessage);
+  return await basicCommands(baseUrl, session, apiKey, chatId, reply_to, "/ai", undefined, fullMessage, openRouterKey);
 }
