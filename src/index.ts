@@ -1,5 +1,6 @@
 import { getWorkerEnv } from "./config/env";
 import { mentionAll, basicCommands, handleTambahTugas, handleLihatTugas, handleHapusTugas, handleDetailTugas, handleHelp, handleAIResponse } from "./functions";
+import { aiCronTest } from "./cron/ai-cron-test";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -191,5 +192,16 @@ export default {
     }
 
     return new Response("Not found", { status: 404, headers: corsHeaders });
+  },
+
+  // Scheduled handler untuk cron jobs
+  async scheduled(controller: any, env: any, ctx: ExecutionContext): Promise<void> {
+    // AI Cron Test - kirim pesan motivasi setiap menit
+    try {
+      await aiCronTest(env);
+      console.log('AI Cron Test executed successfully');
+    } catch (error) {
+      console.error('AI Cron Test failed:', error);
+    }
   }
 };

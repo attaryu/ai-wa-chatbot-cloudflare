@@ -26,7 +26,27 @@ export async function handleTambahTugas(
   const [namaMataKuliah, deskripsi, deadline] = content.split(',').map(s => s.trim());
 
   if (!namaMataKuliah || !deskripsi || !deadline) {
-    const errorResponse = "Format salah! Gunakan: /tambah-tugas [mata kuliah], [deskripsi], [deadline]";
+    const errorResponse = "Format salah! Gunakan: /tambah-tugas [mata kuliah], [deskripsi], [deadline]\n\nContoh: /tambah-tugas Data Mining, Tugas Akhir, 15/12/2025";
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
+  }
+
+  // Validasi format tanggal
+  const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+  const dateMatch = deadline.match(dateRegex);
+  
+  if (!dateMatch) {
+    const errorResponse = "❌ Format tanggal tidak sesuai! Gunakan format: DD/MM/YYYY\n\nContoh: 15/12/2025 atau 7/6/2025";
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
+  }
+
+  const [, day, month, year] = dateMatch;
+  const deadlineDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  
+  // Validasi apakah tanggal valid
+  if (deadlineDate.getDate() !== parseInt(day) || 
+      deadlineDate.getMonth() !== parseInt(month) - 1 || 
+      deadlineDate.getFullYear() !== parseInt(year)) {
+    const errorResponse = "❌ Tanggal tidak valid! Pastikan tanggal, bulan, dan tahun benar.\n\nContoh: 15/12/2025 atau 7/6/2025";
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
   }
 
@@ -40,14 +60,21 @@ export async function handleTambahTugas(
         deskripsi,
         createdAt: new Date().toISOString(),
         participant,
-        deadline: new Date(deadline)
+        deadline: deadlineDate
       };
       await kvManager.saveAssignment(assignmentData);
     } catch (error) {
       console.error('Error saving assignment to KV:', error);
     }
   }
-  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah}\n📝 Deskripsi: ${deskripsi}\n⏰ Deadline: ${deadline}\n🗓️ Ditambahkan: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
+  const formattedDeadline = deadlineDate.toLocaleDateString('id-ID', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    timeZone: 'Asia/Jakarta'
+  });
+  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah}\n📝 Deskripsi: ${deskripsi}\n⏰ Deadline: ${formattedDeadline}\n🗓️ Ditambahkan: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
   return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, successResponse);
 }
 
@@ -72,8 +99,16 @@ export async function handleLihatTugas(
     }
     let list = "📋 *DAFTAR TUGAS*\n\n";
     assignments.forEach((item, idx) => {
-      const time = new Date(item.createdAt).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
-      list += `${idx + 1}. 📚 ${item.namaMataKuliah}\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${item.deadline || '-'}\n   🕒 Timestamp: ${time}\n\n`;
+      const formattedDeadline = item.deadline 
+        ? item.deadline.toLocaleDateString('id-ID', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            timeZone: 'Asia/Jakarta'
+          })
+        : '-';
+      list += `${idx + 1}. 📚 ${item.namaMataKuliah}\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${formattedDeadline}\n\n`;
     });
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, list);
   } catch (error) {
@@ -129,7 +164,16 @@ export async function handleDetailTugas(
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan mata kuliah tersebut tidak ditemukan");
     }
     const date = new Date(assignment.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    const response = `📋 **DETAIL TUGAS**\n\n📚 Mata Kuliah: ${assignment.namaMataKuliah}\n📝 Deskripsi: ${assignment.deskripsi}\n⏰ Deadline: ${assignment.deadline || '-'}\n📅 Dibuat: ${date}\n👤 Oleh: ${assignment.participant}`;
+    const formattedDeadline = assignment.deadline 
+      ? assignment.deadline.toLocaleDateString('id-ID', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          timeZone: 'Asia/Jakarta'
+        })
+      : '-';
+    const response = `📋 **DETAIL TUGAS**\n\n📚 Mata Kuliah: ${assignment.namaMataKuliah}\n📝 Deskripsi: ${assignment.deskripsi}\n⏰ Deadline: ${formattedDeadline}\n📅 Dibuat: ${date}\n👤 Oleh: ${assignment.participant}`;
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
   } catch (error) {
     console.error('Error fetching assignment detail:', error);
@@ -148,11 +192,10 @@ export async function handleHelp(
   const helpText = `🤖 **BANTUAN COMMAND BOT**
 
 📝 **MANAJEMEN TUGAS:**
-• \`/tambah-tugas [deskripsi]\` - Menambah tugas baru
+• \`/tambah-tugas [mata kuliah], [deskripsi], [deadline]\` - Menambah tugas baru
 • \`/lihat-tugas\` - Melihat semua tugas
-• \`/detail [task_id]\` - Melihat detail tugas
-• \`/selesai [task_id]\` - Tandai tugas selesai
-• \`/hapus [task_id]\` - Hapus tugas
+• \`/detail [nama mata kuliah]\` - Melihat detail tugas
+• \`/hapus [nama mata kuliah]\` - Hapus tugas
 
 👋 **SAPAAN:**
 • \`/pagi\` - Sapaan pagi
@@ -161,13 +204,18 @@ export async function handleHelp(
 👥 **GRUP:**
 • \`/presensi\` - Mention semua member
 
+🤖 **AI:**
+• \`/ai [pertanyaan]\` - Tanya AI
+
 ℹ️ **BANTUAN:**
 • \`/help\` - Tampilkan bantuan ini
 
 **Contoh penggunaan:**
-\`/tambah-tugas Beli groceries\`
-\`/selesai abc123def456\`
-\`/hapus abc123def456\``;
+\`/tambah-tugas Data Mining, Tugas Akhir, 15/12/2025\`
+\`/detail Data Mining\`
+\`/hapus Data Mining\`
+
+**Format tanggal:** DD/MM/YYYY (contoh: 15/12/2025)`;
 
   return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, helpText);
 }
