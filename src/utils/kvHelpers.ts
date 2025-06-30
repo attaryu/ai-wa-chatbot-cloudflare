@@ -40,10 +40,42 @@ export class KVAssignmentManager {
     return assignments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
+  // Ambil assignment berdasarkan namaMataKuliah
+  async getAssignmentByNamaMataKuliah(namaMataKuliah: string): Promise<AssignmentData | null> {
+    const list = await this.kv.list({ prefix: "assignment:" });
+    for (const key of list.keys) {
+      const data = await this.kv.get(key.name);
+      if (data) {
+        const assignment: AssignmentData = JSON.parse(data);
+        if (assignment.namaMataKuliah === namaMataKuliah) {
+          return assignment;
+        }
+      }
+    }
+    return null;
+  }
+
   // Hapus assignment
   async deleteAssignment(id: string): Promise<void> {
     const key = `assignment:${id}`;
     await this.kv.delete(key);
+  }
+
+  // Hapus assignment berdasarkan namaMataKuliah
+  async deleteAssignmentByNamaMataKuliah(namaMataKuliah: string): Promise<boolean> {
+    const list = await this.kv.list({ prefix: "assignment:" });
+    let deleted = false;
+    for (const key of list.keys) {
+      const data = await this.kv.get(key.name);
+      if (data) {
+        const assignment: AssignmentData = JSON.parse(data);
+        if (assignment.namaMataKuliah === namaMataKuliah) {
+          await this.kv.delete(key.name);
+          deleted = true;
+        }
+      }
+    }
+    return deleted;
   }
 }
 
