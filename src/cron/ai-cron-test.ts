@@ -36,7 +36,7 @@ export async function aiCronTest(env: any) {
     const targetChatId = "120363399604541928@g.us"; // ID grup target
 
     // Send message to WhatsApp
-    const apiUrl = baseUrl + "/api/sendText";
+    const apiUrl = "https://waha-qxjcatc8.sumopod.in/api/sendText";
     const bodyData = {
       chatId: targetChatId,
       reply_to: null,
