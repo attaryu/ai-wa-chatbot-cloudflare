@@ -26,11 +26,10 @@ export async function aiCronTest(env: any) {
       apiKey: openrouterKey,
     });
 
-    // Generate AI response
-    // const { text } = await generateText({
-    //   model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
-    //   prompt: 'Berikan satu tips motivasi singkat dalam bahasa Indonesia untuk mahasiswa yang sedang belajar. Maksimal 50 kata.',
-    // });
+    const { text } = await generateText({
+      model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
+      prompt: 'Berikan satu tips motivasi singkat dalam bahasa Indonesia untuk mahasiswa yang sedang belajar. Maksimal 50 kata.',
+    });
 
     // Target group chat ID (ganti dengan ID grup yang sesuai)
     const targetChatId = "6285174346212"; // ID grup target

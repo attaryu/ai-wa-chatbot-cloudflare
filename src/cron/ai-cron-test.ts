@@ -20,12 +20,22 @@ export async function aiCronTest(env: any) {
       return;
     }
 
+    // Initialize OpenRouter
+    const openrouter = createOpenRouter({
+      apiKey: openrouterKey,
+    });
+
+    const { text } = await generateText({
+      model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
+      prompt: 'Berikan satu tips motivasi singkat dalam bahasa Indonesia untuk mahasiswa yang sedang belajar. Maksimal 50 kata.',
+    });
+
     // Send message to WhatsApp
     const apiUrl = "https://waha-qxjcatc8.sumopod.in/api/sendText";
     const bodyData = {
       chatId: "6285174346212",
       reply_to: null,
-      text: openrouterKey,
+      text: text,
       session: "session_01jx523c9fdzcaev186szgc67h",
     };
 
