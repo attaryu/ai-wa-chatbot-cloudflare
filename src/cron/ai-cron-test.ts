@@ -4,18 +4,18 @@ import { generateText } from 'ai';
 // AI Cron Test - Kirim pesan WhatsApp setiap menit menggunakan AI
 export async function aiCronTest(env: any) {
   try {
-    // Get OpenRouter API key from environment
-    const openrouterKey = await env.openrouter_key.get();
+    // Get OpenRouter API key from environment (secret store)
+    const openrouterKey = env.openrouter_key ? await env.openrouter_key.get() : undefined;
     if (!openrouterKey) {
       console.error('OpenRouter API key not found in environment');
       return;
     }
 
-    // Get WhatsApp API credentials
-    const baseUrl = await env.base_url.get();
-    const session = await env.session.get();
-    const apiKey = await env.api_key.get();
-    
+    // Get WhatsApp API credentials (plain string bindings)
+    const baseUrl = env.base_url_name;
+    const session = env.session_name;
+    const apiKey = env.api_key ? await env.api_key.get() : undefined;
+
     if (!baseUrl || !session || !apiKey) {
       console.error('WhatsApp API credentials not found in environment');
       return;
