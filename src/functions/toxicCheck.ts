@@ -1,9 +1,6 @@
-// Fungsi deteksi kata toxic dan teguran
-
 const TOXIC_WORDS = [
-  "anjing", "babi", "bangsat", "kontol", "memek", "goblok", "tolol", "kampret", "ngentot",
-  "brengsek", "setan", "jancok", "bajingan", "keparat"
-  // tambahkan kata lain jika perlu
+  "anjing", "babi", "bangsat", "kontol", "memek", "goblok", "tolol",
+  "ngentot", "brengsek", "setan", "jancok", "bajingan", "keparat"
 ];
 
 export function checkToxic(text: string): { isToxic: boolean, found: string[] } {
