@@ -14,7 +14,7 @@ export class KVAssignmentManager {
 
   // Simpan assignment baru
   async saveAssignment(data: AssignmentData): Promise<void> {
-    const key = `assignment:${data.namaMataKuliah}`;
+    const key = `${data.namaMataKuliah}`;
     // Convert Date object ke string saat simpan
     const dataToSave = {
       ...data,
