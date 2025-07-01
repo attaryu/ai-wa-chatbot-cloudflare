@@ -4,3 +4,4 @@ export { basicCommands, COMMAND_RESPONSES } from './messageHandlers';
 export { handleTambahTugas, handleLihatTugas, handleHapusTugas, handleHelp } from './assignment';
 export { handleAIResponse } from './ai';
 export { checkToxic, getToxicWarning } from './toxicCheck';
+export { handleDevInfo } from './messageHandlers';

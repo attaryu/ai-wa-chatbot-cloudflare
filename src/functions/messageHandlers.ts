@@ -51,6 +51,44 @@ export async function basicCommands(
   return { status: "sent", sent: bodyData, apiResult };
 }
 
+// Handler untuk command /dev
+export async function handleDevInfo(
+  baseUrl: string,
+  session: string,
+  apiKey: string,
+  chatId: string,
+  reply_to: string
+) {
+  const devInfo = `👨‍💻 *Developer Bot*
+
+Nama: Wahyu Desu
+GitHub: github.com/wahyudesu
+
+*Ketentuan penggunaan:*
+- Bot ini hanya untuk keperluan pembelajaran dan komunitas
+- Jangan gunakan untuk spam atau tindakan melanggar hukum
+- Fitur dapat berubah sewaktu-waktu
+
+Terima kasih telah menggunakan bot ini!`;
+  const apiUrl = baseUrl + "/api/sendText";
+  const bodyData = {
+    chatId: chatId,
+    reply_to: reply_to,
+    text: devInfo,
+    session: session,
+  };
+  await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "accept": "application/json",
+      "Content-Type": "application/json",
+      "X-Api-Key": apiKey,
+    },
+    body: JSON.stringify(bodyData),
+  });
+  return { status: "sent", sent: bodyData };
+}
+
 // Wrapper functions untuk backward compatibility (opsional) (dan gakepake)
 export async function handleSelamatPagi(
   baseUrl: string,

@@ -9,6 +9,7 @@ import {
   handleAIResponse,
   checkToxic,
   getToxicWarning,
+  handleDevInfo,
 } from "./functions";
 import { aiCronTest } from "./cron/ai-cron-test";
 import assignmentCron from "./cron/assignment-cron";
@@ -143,6 +144,15 @@ export default {
       if (text?.startsWith("/ai") && chatId && reply_to) {
         try {
           const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text, openrouterKey);
+          return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        } catch (e: any) {
+          return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        }
+      }
+
+      if (text === "/dev" && chatId && reply_to) {
+        try {
+          const result = await handleDevInfo(baseUrl, session, APIkey, chatId, reply_to);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
