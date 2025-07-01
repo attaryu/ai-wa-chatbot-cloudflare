@@ -46,6 +46,44 @@ export default {
 
       console.log("Received event:", JSON.stringify(data));
 
+      // Handle group join events
+      if (data.event === "group.v2.participants") {
+        const groupPayload = data.payload;
+        if (groupPayload.type === "join" && groupPayload.group && groupPayload.participants) {
+          const groupId = groupPayload.group.id;
+          const joinedParticipants = groupPayload.participants;
+          
+          for (const participant of joinedParticipants) {
+            const participantId = participant.id;
+            const welcomeMessage = `🎉 Selamat datang @${participantId.replace("@c.us", "")} di grup ini!\n\nSemoga betah dan aktif ya! 😊`;
+            
+            try {
+              await fetch(baseUrl + "/api/sendText", {
+                method: "POST",
+                headers: {
+                  "accept": "application/json",
+                  "Content-Type": "application/json",
+                  "X-Api-Key": APIkey,
+                },
+                body: JSON.stringify({
+                  chatId: groupId,
+                  text: welcomeMessage,
+                  session: session,
+                  mentions: [participantId],
+                }),
+              });
+            } catch (error) {
+              console.error("Error sending welcome message:", error);
+            }
+          }
+          
+          return new Response(JSON.stringify({ status: "welcome message sent" }), { 
+            status: 200, 
+            headers: { "Content-Type": "application/json", ...corsHeaders } 
+          });
+        }
+      }
+
       const payload = data.payload || {};
       const chatId = payload.from;
       const text = payload.body;

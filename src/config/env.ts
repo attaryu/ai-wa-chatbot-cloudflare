@@ -2,7 +2,8 @@ import { env } from "cloudflare:workers";
 
 // Grup WA Spesifik (wajib)
 export const GroupIds = [
-  "120363399604541928@g.us",
+  "120363399604541928@g.us", //AAAAA
+  "120363183408730771@g.us", //jamaah wahyu sdt
 //   "120363123456789@g.us",
 //   "6281234567890@c.us", 
 ];

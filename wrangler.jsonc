@@ -48,9 +48,17 @@
 	 * Cron Triggers
 	 * https://developers.cloudflare.com/workers/configuration/cron-triggers/
 	 */
-	"triggers": {
-		"crons": ["1 17 * * *"]
+  "triggers": {
+	"crons": ["1 17 * * *"]
+  },
+
+  "d1_databases": [
+	{
+	  "binding": "db-tugas",
+	  "database_name": "tugas-kelas",
+	  "database_id": "e89b04e7-683f-4b08-be1b-a0e554d8b1f8"
 	}
+  ]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

@@ -16,7 +16,7 @@ export default {
         });
         
         // Kirim ke grup utama
-        const targetGroupId = GroupIds[0]; // ambil grup pertama dari env
+        const targetGroupId = GroupIds[1]; // ambil grup kedua dari env
         if (targetGroupId) {
           await fetch(`${await env.base_url_name.get()}/api/sendText`, {
             method: "POST",
@@ -26,7 +26,7 @@ export default {
               "X-Api-Key": await env.api_key.get(),
             },
             body: JSON.stringify({
-              chatId: targetGroupId,
+              chatId: "120363183408730771@g.us",
               reply_to: null,
               text: taskList,
               session: await env.session_name.get(),
