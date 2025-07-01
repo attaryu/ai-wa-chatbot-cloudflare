@@ -54,7 +54,7 @@ export default {
       const participant = payload.participant;
       const reply_to = payload.id;
 
-      if (text?.startsWith("/presensi") && chatId && personalIds.includes(participant)) {
+      if (text?.startsWith("/presensi") && chatId) {
         try {
           const mentionResult = await mentionAll(baseUrl, session, chatId, APIkey);
           return new Response(
@@ -121,7 +121,7 @@ export default {
         }
       }
 
-      if (text?.startsWith("/ai") && chatId && reply_to && personalIds.includes(participant)) {
+      if (text?.startsWith("/ai") && chatId && reply_to) {
         try {
           const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text, openrouterKey);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -136,12 +136,12 @@ export default {
     return new Response("Not found", { status: 404, headers: corsHeaders });
   },
 
-  async scheduled(event: ScheduledEvent, env: any, ctx: ExecutionContext): Promise<void> {
-    try {
-      await aiCronTest(env);
-      console.log("AI Cron Test executed successfully");
-    } catch (error) {
-      console.error("AI Cron Test failed:", error);
-    }
-  },
+  // async scheduled(event: ScheduledEvent, env: any, ctx: ExecutionContext): Promise<void> {
+  //   try {
+  //     await aiCronTest(env);
+  //     console.log("AI Cron Test executed successfully");
+  //   } catch (error) {
+  //     console.error("AI Cron Test failed:", error);
+  //   }
+  // },
 };
