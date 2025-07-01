@@ -54,10 +54,21 @@ export default {
       if (text) {
         const toxicResult = checkToxic(text);
         if (toxicResult.isToxic) {
-          return new Response(
-            JSON.stringify({ warning: getToxicWarning(toxicResult.found) }),
-            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-          );
+          // Kirim pesan peringatan ke WhatsApp
+          await fetch(baseUrl + "/api/sendText", {
+            method: "POST",
+            headers: {
+              "accept": "application/json",
+              "Content-Type": "application/json",
+              "X-Api-Key": APIkey,
+            },
+            body: JSON.stringify({
+              chatId: chatId,
+              reply_to: reply_to,
+              text: getToxicWarning(toxicResult.found),
+              session: session,
+            }),
+          });
         }
       }
 
