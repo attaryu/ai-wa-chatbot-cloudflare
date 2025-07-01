@@ -1,7 +1,8 @@
 // Fungsi deteksi kata toxic dan teguran
 
 const TOXIC_WORDS = [
-  "anjing", "babi", "bangsat", "kontol", "memek", "goblok", "tolol", "kampret", "ngentot", "asu"
+  "anjing", "babi", "bangsat", "kontol", "memek", "goblok", "tolol", "kampret", "ngentot",
+  "brengsek", "setan", "jancok", "bajingan", "keparat"
   // tambahkan kata lain jika perlu
 ];
 
@@ -13,5 +14,5 @@ export function checkToxic(text: string): { isToxic: boolean, found: string[] } 
 }
 
 export function getToxicWarning(found: string[]): string {
-  return `⚠️ Pesan kamu terdeteksi mengandung kata tidak pantas: ${found.map(w => `"${w}"`).join(", ")}.\nMohon gunakan bahasa yang sopan!`;
+  return `⚠️ Pesan kamu terdeteksi mengandung kata tidak pantas.\nMohon gunakan bahasa yang sopan!`;
 }
