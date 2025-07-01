@@ -9,7 +9,7 @@ export const GroupIds = [
 
 // Spesifik personal contact (default:everyone)
 export const PersonalIds = [
-  "6285174346212@c.us",
+  "6285174346212@c.us", 
 //   "120363123456789@g.us",
 //   "6281234567890@c.us", 
 ];

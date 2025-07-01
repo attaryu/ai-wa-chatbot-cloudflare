@@ -145,41 +145,6 @@ export async function handleHapusTugas(
 }
 
 // Function untuk melihat detail tugas berdasarkan namaMataKuliah
-export async function handleDetailTugas(
-  baseUrl: string,
-  session: string,
-  apiKey: string,
-  chatId: string,
-  reply_to: string,
-  namaMataKuliah: string,
-  kv?: KVNamespace
-) {
-  if (!kv) {
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
-  }
-  try {
-    const kvManager = new KVAssignmentManager(kv);
-    const assignment = await kvManager.getAssignmentByNamaMataKuliah(namaMataKuliah);
-    if (!assignment) {
-      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas dengan mata kuliah tersebut tidak ditemukan");
-    }
-    const date = new Date(assignment.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    const formattedDeadline = assignment.deadline 
-      ? assignment.deadline.toLocaleDateString('id-ID', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric',
-          timeZone: 'Asia/Jakarta'
-        })
-      : '-';
-    const response = `📋 **DETAIL TUGAS**\n\n📚 Mata Kuliah: ${assignment.namaMataKuliah}\n📝 Deskripsi: ${assignment.deskripsi}\n⏰ Deadline: ${formattedDeadline}\n📅 Dibuat: ${date}\n👤 Oleh: ${assignment.participant}`;
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
-  } catch (error) {
-    console.error('Error fetching assignment detail:', error);
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error mengambil detail tugas");
-  }
-}
 
 // Function untuk menampilkan bantuan/help command
 export async function handleHelp(

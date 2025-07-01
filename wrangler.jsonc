@@ -49,9 +49,7 @@
 	 * https://developers.cloudflare.com/workers/configuration/cron-triggers/
 	 */
 	"triggers": {
-		"crons": [
-			"*/2 * * * *"
-		]
+		"crons": ["1 17 * * *"]
 	}
 	/**
 	 * Smart Placement
