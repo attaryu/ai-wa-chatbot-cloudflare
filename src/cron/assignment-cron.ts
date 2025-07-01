@@ -10,7 +10,7 @@ export default {
       const list = await kv.list();
       
       if (list.keys.length > 0) {
-        let taskList = "📋 *Reminder Tugas Hari Ini*\n\n";
+        let taskList = "📋 *Reminder Tugas Deadline hari ini*\n\n";
         list.keys.forEach((key: any, idx: any) => {
           taskList += `${idx + 1}. 📝 ${key.name}\n`;
         });

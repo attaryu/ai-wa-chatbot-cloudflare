@@ -71,17 +71,19 @@ export async function handleLihatTugas(
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
   try {
-    // Ambil semua keys dari KV
-    const list = await kv.list();
-    if (list.keys.length === 0) {
+    // Ambil semua assignment dari KV
+    const manager = new KVAssignmentManager(kv);
+    const assignments = await manager.getAllAssignments();
+    if (assignments.length === 0) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "📝 Belum ada tugas yang tersimpan");
     }
-    
+
     let taskList = "📋 *DAFTAR TUGAS*\n\n";
-    list.keys.forEach((key, idx) => {
-      taskList += `${idx + 1}. 📝 ${key.name}\n`;
+    assignments.forEach((item, idx) => {
+      const deadlineStr = item.deadline ? (typeof item.deadline === 'string' ? item.deadline : item.deadline.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })) : '-';
+      taskList += `${idx + 1}. 📚 *${item.namaMataKuliah}*\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n`;
     });
-    
+
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, taskList);
   } catch (error) {
     console.error('Error fetching assignments:', error);
