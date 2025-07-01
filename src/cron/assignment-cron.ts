@@ -1,69 +1,41 @@
-// Cron untuk reminder assignment H-1
-import { KVAssignmentManager } from '../utils/kvHelpers';
+// Cron untuk reminder assignment (disederhanakan karena tidak ada deadline)
+import { GroupIds } from '../config/env';
 
 export default {
   async scheduled(event: any, env: any, ctx: ExecutionContext) {
-    const kv = env.MY_KV;
-    const kvManager = new KVAssignmentManager(kv);
-    const assignments = await kvManager.getAllAssignments();
-    const today = new Date();
-    for (const assignment of assignments) {
-      if (!assignment.deadline) continue;
-      // Deadline format bebas, coba parse
-      const deadlineDate = new Date(assignment.deadline);
-      if (isNaN(deadlineDate.getTime())) continue;
-      // H-1
-      const diff = Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      if (diff === 1) {
-        // Kirim pesan ke grup (hardcode grup utama karena tidak ada groupId di data)
-        const message = `⏰ *Reminder Tugas Besok!*\n\n📚 Mata Kuliah: ${assignment.namaMataKuliah}\n📝 Deskripsi: ${assignment.deskripsi}\n⏰ Deadline: ${assignment.deadline}`;
-        await fetch(`${env.base_url}/api/sendText`, {
-          method: "POST",
-          headers: {
-            "accept": "application/json",
-            "Content-Type": "application/json",
-            "X-Api-Key": env.x_api_key,
-          },
-          body: JSON.stringify({
-            chatId: "120363399604541928@g.us", // hardcode grup utama
-            reply_to: null,
-            text: message,
-            session: env.session,
-          }),
+    const kv = env["kv-database"];
+    
+    try {
+      // Ambil semua tugas dari KV
+      const list = await kv.list();
+      
+      if (list.keys.length > 0) {
+        let taskList = "📋 *Reminder Tugas Hari Ini*\n\n";
+        list.keys.forEach((key: any, idx: any) => {
+          taskList += `${idx + 1}. 📝 ${key.name}\n`;
         });
+        
+        // Kirim ke grup utama
+        const targetGroupId = GroupIds[0]; // ambil grup pertama dari env
+        if (targetGroupId) {
+          await fetch(`${await env.base_url_name.get()}/api/sendText`, {
+            method: "POST",
+            headers: {
+              "accept": "application/json",
+              "Content-Type": "application/json",
+              "X-Api-Key": await env.api_key.get(),
+            },
+            body: JSON.stringify({
+              chatId: targetGroupId,
+              reply_to: null,
+              text: taskList,
+              session: await env.session_name.get(),
+            }),
+          });
+        }
       }
-    }
-  },
-
-  // Fungsi untuk deteksi toxic pada pesan masuk
-  async onMessage(payload: any, env: any) {
-    const { body, from } = payload;
-    if (body && containsToxicWord(body)) {
-      const warning = '⚠️ Pesan mengandung kata tidak pantas. Mohon jaga etika di grup ini.';
-      await fetch(`${env.base_url}/api/sendText`, {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "Content-Type": "application/json",
-          "X-Api-Key": env.x_api_key,
-        },
-        body: JSON.stringify({
-          chatId: from,
-          reply_to: null,
-          text: warning,
-          session: env.session,
-        }),
-      });
+    } catch (error) {
+      console.error('Assignment cron error:', error);
     }
   },
 };
-
-// Fungsi deteksi kata toxic sederhana
-const TOXIC_WORDS = [
-  'anjing', 'babi', 'bangsat', 'kontol', 'goblok', 'tolol', 'kampret', 'asu', 'ngentot', 'memek', 'perek', 'idiot', 'bodoh'
-];
-
-export function containsToxicWord(text: string): boolean {
-  const lower = text.toLowerCase();
-  return TOXIC_WORDS.some(word => lower.includes(word));
-}

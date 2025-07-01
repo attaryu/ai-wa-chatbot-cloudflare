@@ -14,26 +14,13 @@ export class KVAssignmentManager {
 
   // Simpan assignment baru
   async saveAssignment(data: AssignmentData): Promise<void> {
-    const key = `assignment:${data.id}`;
+    const key = `assignment:${data.namaMataKuliah}`;
     // Convert Date object ke string saat simpan
     const dataToSave = {
       ...data,
       deadline: data.deadline ? data.deadline.toISOString() : undefined
     };
     await this.kv.put(key, JSON.stringify(dataToSave));
-  }
-
-  // Ambil assignment berdasarkan ID
-  async getAssignment(id: string): Promise<AssignmentData | null> {
-    const key = `assignment:${id}`;
-    const data = await this.kv.get(key);
-    if (!data) return null;
-    const parsed = JSON.parse(data);
-    // Convert string deadline kembali ke Date object
-    if (parsed.deadline) {
-      parsed.deadline = new Date(parsed.deadline);
-    }
-    return parsed;
   }
 
   // Ambil semua assignment
@@ -71,12 +58,6 @@ export class KVAssignmentManager {
       }
     }
     return null;
-  }
-
-  // Hapus assignment
-  async deleteAssignment(id: string): Promise<void> {
-    const key = `assignment:${id}`;
-    await this.kv.delete(key);
   }
 
   // Hapus assignment berdasarkan namaMataKuliah

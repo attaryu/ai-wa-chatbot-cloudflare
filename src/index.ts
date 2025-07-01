@@ -11,6 +11,7 @@ import {
   getToxicWarning,
 } from "./functions";
 import { aiCronTest } from "./cron/ai-cron-test";
+import assignmentCron from "./cron/assignment-cron";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -122,8 +123,8 @@ export default {
 
       if (text?.startsWith("/hapus ") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
-          const namaMataKuliah = text.replace("/hapus ", "").trim();
-          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaMataKuliah, env["kv-database"]);
+          const namaTugas = text.replace("/hapus ", "").trim();
+          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaTugas, env["kv-database"]);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -154,12 +155,13 @@ export default {
     return new Response("Not found", { status: 404, headers: corsHeaders });
   },
 
-  // async scheduled(event: ScheduledEvent, env: any, ctx: ExecutionContext): Promise<void> {
-  //   try {
-  //     await aiCronTest(env);
-  //     console.log("AI Cron Test executed successfully");
-  //   } catch (error) {
-  //     console.error("AI Cron Test failed:", error);
-  //   }
-  // },
+  async scheduled(event: any, env: any, ctx: ExecutionContext): Promise<void> {
+    try {
+      // Assignment reminder cron - kirim daftar tugas setiap hari
+      await assignmentCron.scheduled(event, env, ctx);
+      console.log("Assignment cron executed successfully");
+    } catch (error) {
+      console.error("Assignment cron failed:", error);
+    }
+  },
 };
