@@ -1,4 +1,4 @@
-import { getWorkerEnv } from "./config/env";
+import { getWorkerEnv, PersonalIds } from "./config/env";
 import {
   mentionAll,
   basicCommands,
@@ -7,6 +7,8 @@ import {
   handleHapusTugas,
   handleHelp,
   handleAIResponse,
+  checkToxic,
+  getToxicWarning,
 } from "./functions";
 import { aiCronTest } from "./cron/ai-cron-test";
 
@@ -15,12 +17,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
-
-// Daftar nomor personal yang diizinkan
-const personalIds = [
-  "6285174346212@c.us",
-  // tambahkan nomor lain jika perlu
-];
 
 export default {
   async fetch(request: Request, env: any): Promise<Response> {
@@ -54,6 +50,17 @@ export default {
       const participant = payload.participant;
       const reply_to = payload.id;
 
+      // Deteksi toxic sebelum proses lain
+      if (text) {
+        const toxicResult = checkToxic(text);
+        if (toxicResult.isToxic) {
+          return new Response(
+            JSON.stringify({ warning: getToxicWarning(toxicResult.found) }),
+            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+      }
+
       if (text?.startsWith("/presensi") && chatId) {
         try {
           const mentionResult = await mentionAll(baseUrl, session, chatId, APIkey);
@@ -66,7 +73,7 @@ export default {
         }
       }
 
-      if (chatId && text === "/malam" && reply_to && personalIds.includes(participant)) {
+      if (chatId && text === "/malam" && reply_to && PersonalIds.includes(participant)) {
         try {
           const result = await basicCommands(baseUrl, session, APIkey, chatId, reply_to, "/malam");
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -75,7 +82,7 @@ export default {
         }
       }
 
-      if (chatId && text === "/pagi" && reply_to && personalIds.includes(participant)) {
+      if (chatId && text === "/pagi" && reply_to && PersonalIds.includes(participant)) {
         try {
           const result = await basicCommands(baseUrl, session, APIkey, chatId, reply_to, "/pagi");
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -84,7 +91,7 @@ export default {
         }
       }
 
-      if (text?.startsWith("/tugas") && chatId && reply_to && personalIds.includes(participant)) {
+      if (text?.startsWith("/tugas") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
           const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env["kv-database"]);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -93,7 +100,7 @@ export default {
         }
       }
 
-      if (text === "/list-tugas" && chatId && reply_to && personalIds.includes(participant)) {
+      if (text === "/list-tugas" && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
           const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env["kv-database"]);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -102,7 +109,7 @@ export default {
         }
       }
 
-      if (text?.startsWith("/hapus ") && chatId && reply_to && personalIds.includes(participant)) {
+      if (text?.startsWith("/hapus ") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
           const namaMataKuliah = text.replace("/hapus ", "").trim();
           const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaMataKuliah, env["kv-database"]);
