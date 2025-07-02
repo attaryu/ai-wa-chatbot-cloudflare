@@ -51,6 +51,7 @@ export default {
       
       // Filter tugas yang deadline-nya hari ini
       const todayAssignments = assignments.filter(a => isDeadlineToday(a.deadline || ''));
+      console.log("Today assignments:", todayAssignments);
       // Filter tugas yang deadline-nya sudah lewat
       const pastAssignments = assignments.filter(a => isDeadlinePast(a.deadline || ''));
 
@@ -68,6 +69,7 @@ export default {
         // Kirim ke grup utama
         const targetGroupId = GroupIds[1]; // ambil grup kedua dari env
         if (targetGroupId) {
+          console.log("Sending reminder to group:", targetGroupId, "with text:", taskList);
           await fetch(`${await env.base_url_name.get()}/api/sendText`, {
             method: "POST",
             headers: {

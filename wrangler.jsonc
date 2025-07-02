@@ -50,7 +50,7 @@
 	 */
 "triggers": {
 	// Runs every day at 01:45 GMT+7 (which is 18:45 UTC the previous day)
-	"crons": ["55 18 * * *"]
+	"crons": ["02 19 * * *"]
 },
 
   "d1_databases": [
