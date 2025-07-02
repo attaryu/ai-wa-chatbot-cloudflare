@@ -205,7 +205,7 @@ export default {
 
   async scheduled(event: any, env: any, ctx: ExecutionContext): Promise<void> {
     try {
-      // Assignment reminder cron - kirim daftar tugas setiap hari
+      // Assignment reminder cron - hanya kirim reminder tugas yang deadline hari ini dan hapus yang sudah lewat
       await assignmentCron.scheduled(event, env, ctx);
       console.log("Assignment cron executed successfully");
     } catch (error) {
