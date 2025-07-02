@@ -21,9 +21,8 @@ CREATE TABLE IF NOT EXISTS assignments (
 - [x] tambah function toxic check
 - [x] ganti db kv dgn db 1
 - [x] crud tugas dari db 1
-- [x] presensi
-- [x] presensi
-- [x] presensi
-- [x] presensi
-- [x] presensi
+- [x] list tugas
+- [x] terapkan secret store binding
+- [x] modular dev id dan group id
+- [x] 
 - [ ] terapkan media penyimpanan
