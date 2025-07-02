@@ -144,7 +144,7 @@ export default {
 
       if (text?.startsWith("/tugas") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
-          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env["kv-database"]);
+          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env["db-tugas"]);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -153,7 +153,7 @@ export default {
 
       if (text === "/list-tugas" && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
-          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env["kv-database"]);
+          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env["db-tugas"]);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -163,7 +163,7 @@ export default {
       if (text?.startsWith("/hapus ") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
           const namaTugas = text.replace("/hapus ", "").trim();
-          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaTugas, env["kv-database"]);
+          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaTugas, env["db-tugas"]);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });

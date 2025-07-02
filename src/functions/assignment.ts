@@ -1,4 +1,4 @@
-import { KVAssignmentManager, AssignmentData, generateId } from '../utils/kvHelpers';
+import { D1AssignmentManager, AssignmentData, generateId } from '../utils/d1Helpers';
 
 // Interface untuk command mapping
 interface CommandMapping {
@@ -19,7 +19,7 @@ export async function handleTambahTugas(
   reply_to: string,
   fullMessage: string,
   participant: string,
-  kv?: KVNamespace
+  db?: D1Database
 ) {
   // Format: /tugas [nama tugas], [deskripsi], [deadline]
   const content = fullMessage.replace("/tugas", "").trim();
@@ -36,20 +36,22 @@ export async function handleTambahTugas(
   }
   const [namaMataKuliah, deskripsi, deadline] = parts;
 
-  if (kv) {
+  if (db) {
     try {
-      // Simpan dengan key = assignment:namaMataKuliah, value = JSON AssignmentData
-      const data = {
+      const manager = new D1AssignmentManager(db);
+      await manager.initializeTable();
+      
+      const data: AssignmentData = {
         id: generateId(),
         namaMataKuliah,
         deskripsi,
         createdAt: new Date().toISOString(),
         participant,
-        deadline: deadline ? new Date(deadline).toISOString() : undefined
+        deadline: deadline || undefined
       };
-      await kv.put(`assignment:${namaMataKuliah}`, JSON.stringify(data));
+      await manager.saveAssignment(data);
     } catch (error) {
-      console.error('Error saving assignment to KV:', error);
+      console.error('Error saving assignment to D1:', error);
     }
   }
 
@@ -65,23 +67,24 @@ export async function handleLihatTugas(
   chatId: string,
   reply_to: string,
   participant: string,
-  kv?: KVNamespace
+  db?: D1Database
 ) {
-  if (!kv) {
+  if (!db) {
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
   try {
-    // Ambil semua assignment dari KV
-    const manager = new KVAssignmentManager(kv);
+    // Ambil semua assignment dari D1
+    const manager = new D1AssignmentManager(db);
+    await manager.initializeTable();
     const assignments = await manager.getAllAssignments();
     if (assignments.length === 0) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "📝 Belum ada tugas yang tersimpan");
     }
 
     let taskList = "📋 *DAFTAR TUGAS*\n\n";
-    assignments.forEach((item, idx) => {
-      const deadlineStr = item.deadline ? (typeof item.deadline === 'string' ? item.deadline : item.deadline.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })) : '-';
-      taskList += `${idx + 1}. 📚 *${item.namaMataKuliah}*\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n`;
+    assignments.forEach((item: AssignmentData, idx: number) => {
+      const deadlineStr = item.deadline || '-';
+      taskList += `${idx + 1}. 📚 *${item.namaMataKuliah}*\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
     });
 
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, taskList);
@@ -99,22 +102,29 @@ export async function handleHapusTugas(
   chatId: string,
   reply_to: string,
   namaTugas: string,
-  kv?: KVNamespace
+  db?: D1Database
 ) {
-  if (!kv) {
+  if (!db) {
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
   try {
+    const manager = new D1AssignmentManager(db);
+    await manager.initializeTable();
+    
     // Cek apakah tugas ada
-    const value = await kv.get(namaTugas);
-    if (!value) {
+    const exists = await manager.assignmentExists(namaTugas);
+    if (!exists) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas tidak ditemukan");
     }
     
     // Hapus tugas
-    await kv.delete(namaTugas);
-    const response = `🗑️ Tugas berhasil dihapus!\n\n� Nama Tugas: ${namaTugas}`;
-    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
+    const deleted = await manager.deleteAssignmentByNamaMataKuliah(namaTugas);
+    if (deleted) {
+      const response = `🗑️ Tugas berhasil dihapus!\n\n📚 Nama Tugas: ${namaTugas}`;
+      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
+    } else {
+      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Gagal menghapus tugas");
+    }
   } catch (error) {
     console.error('Error deleting assignment:', error);
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Error menghapus tugas");

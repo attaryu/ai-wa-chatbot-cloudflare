@@ -1,18 +1,22 @@
-// Cron untuk reminder assignment (disederhanakan karena tidak ada deadline)
+// Cron untuk reminder assignment (menggunakan D1 database)
 import { GroupIds } from '../config/env';
+import { D1AssignmentManager } from '../utils/d1Helpers';
 
 export default {
   async scheduled(event: any, env: any, ctx: ExecutionContext) {
-    const kv = env["kv-database"];
+    const db = env["db-tugas"];
     
     try {
-      // Ambil semua tugas dari KV
-      const list = await kv.list();
+      // Ambil semua tugas dari D1
+      const manager = new D1AssignmentManager(db);
+      await manager.initializeTable();
+      const assignments = await manager.getAllAssignments();
       
-      if (list.keys.length > 0) {
-        let taskList = "📋 *Reminder Tugas Deadline hari ini*\n\n";
-        list.keys.forEach((key: any, idx: any) => {
-          taskList += `${idx + 1}. 📝 ${key.name}\n`;
+      if (assignments.length > 0) {
+        let taskList = "📋 *Reminder Tugas Harian*\n\n";
+        assignments.forEach((assignment, idx) => {
+          const deadlineStr = assignment.deadline || '-';
+          taskList += `${idx + 1}. 📚 *${assignment.namaMataKuliah}*\n   📝 ${assignment.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
         });
         
         // Kirim ke grup utama
