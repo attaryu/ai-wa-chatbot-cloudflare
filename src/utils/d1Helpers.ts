@@ -14,40 +14,59 @@ export class D1AssignmentManager {
 
   // Initialize database table
   async initializeTable(): Promise<void> {
-    await this.db.exec(`
-      CREATE TABLE IF NOT EXISTS assignments (
-        id TEXT PRIMARY KEY,
-        namaMataKuliah TEXT NOT NULL,
-        deskripsi TEXT NOT NULL,
-        createdAt TEXT NOT NULL,
-        participant TEXT NOT NULL,
-        deadline TEXT
-      )
-    `);
+    try {
+      await this.db.exec(`
+        CREATE TABLE IF NOT EXISTS assignments (
+          id TEXT PRIMARY KEY,
+          namaMataKuliah TEXT NOT NULL,
+          deskripsi TEXT NOT NULL,
+          createdAt TEXT NOT NULL,
+          participant TEXT NOT NULL,
+          deadline TEXT
+        )
+      `);
+      console.log('D1 Table initialized successfully');
+    } catch (error) {
+      console.error('Error initializing D1 table:', error);
+      throw error;
+    }
   }
 
   // Simpan assignment baru
   async saveAssignment(data: AssignmentData): Promise<void> {
-    await this.db.prepare(`
-      INSERT INTO assignments (id, namaMataKuliah, deskripsi, createdAt, participant, deadline)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).bind(
-      data.id,
-      data.namaMataKuliah,
-      data.deskripsi,
-      data.createdAt,
-      data.participant,
-      data.deadline
-    ).run();
+    try {
+      console.log('Saving assignment to D1:', data);
+      const result = await this.db.prepare(`
+        INSERT INTO assignments (id, namaMataKuliah, deskripsi, createdAt, participant, deadline)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).bind(
+        data.id,
+        data.namaMataKuliah,
+        data.deskripsi,
+        data.createdAt,
+        data.participant,
+        data.deadline
+      ).run();
+      console.log('D1 save result:', result);
+    } catch (error) {
+      console.error('Error saving to D1:', error);
+      throw error;
+    }
   }
 
   // Ambil semua assignment
   async getAllAssignments(): Promise<AssignmentData[]> {
-    const result = await this.db.prepare(`
-      SELECT * FROM assignments ORDER BY createdAt DESC
-    `).all();
-    
-    return result.results as unknown as AssignmentData[];
+    try {
+      console.log('Fetching all assignments from D1');
+      const result = await this.db.prepare(`
+        SELECT * FROM assignments ORDER BY createdAt DESC
+      `).all();
+      console.log('D1 fetch result:', result);
+      return result.results as unknown as AssignmentData[];
+    } catch (error) {
+      console.error('Error fetching from D1:', error);
+      throw error;
+    }
   }
 
   // Ambil assignment berdasarkan namaMataKuliah

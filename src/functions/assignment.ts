@@ -38,6 +38,7 @@ export async function handleTambahTugas(
 
   if (db) {
     try {
+      console.log('Database object received:', !!db);
       const manager = new D1AssignmentManager(db);
       await manager.initializeTable();
       
@@ -49,10 +50,16 @@ export async function handleTambahTugas(
         participant,
         deadline: deadline || undefined
       };
+      console.log('Attempting to save assignment:', data);
       await manager.saveAssignment(data);
+      console.log('Assignment saved successfully');
     } catch (error) {
       console.error('Error saving assignment to D1:', error);
+      return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, `❌ Error menyimpan tugas: ${error}`);
     }
+  } else {
+    console.error('D1 database not available');
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
 
   const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah}\n📝 Deskripsi: ${deskripsi}\n⏰ Deadline: ${deadline}\n🗓️ Ditambahkan: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
