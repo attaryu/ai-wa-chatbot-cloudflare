@@ -1,7 +1,7 @@
 // Helper functions untuk operasi D1 database
 export interface AssignmentData {
   id: string;
-  namaMataKuliah: string;
+  mata_kuliah: string; // Sesuaikan dengan database schema
   deskripsi: string;
   createdAt: string;
   participant: string;
@@ -14,6 +14,15 @@ export class D1AssignmentManager {
   // Skip auto table creation, assume table already exists
   async initializeTable(): Promise<void> {
     // Table should be created manually via migration
+    
+    // CREATE TABLE IF NOT EXISTS assignments (
+    //   id TEXT PRIMARY KEY,
+    //   namaMataKuliah TEXT NOT NULL,
+    //   deskripsi TEXT NOT NULL,
+    //   createdAt TEXT NOT NULL,
+    //   participant TEXT NOT NULL,
+    //   deadline TEXT
+    // );
     console.log('Skipping table initialization - assuming table exists');
   }
 
@@ -21,16 +30,17 @@ export class D1AssignmentManager {
   async saveAssignment(data: AssignmentData): Promise<void> {
     try {
       console.log('Saving assignment to D1:', data);
+      // Untuk field createdAt, biarkan database menggunakan DEFAULT CURRENT_TIMESTAMP
+      // Untuk deadline, convert dari string ke format DATETIME yang valid
       const result = await this.db.prepare(`
-        INSERT INTO assignments (id, namaMataKuliah, deskripsi, createdAt, participant, deadline)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO assignments (id, mata_kuliah, deskripsi, participant, deadline)
+        VALUES (?, ?, ?, ?, ?)
       `).bind(
         data.id,
-        data.namaMataKuliah,
+        data.mata_kuliah,
         data.deskripsi,
-        data.createdAt,
         data.participant,
-        data.deadline
+        data.deadline || null
       ).run();
       console.log('D1 save result:', result);
     } catch (error) {
@@ -44,7 +54,9 @@ export class D1AssignmentManager {
     try {
       console.log('Fetching all assignments from D1');
       const result = await this.db.prepare(`
-        SELECT * FROM assignments ORDER BY createdAt DESC
+        SELECT id, mata_kuliah, deskripsi, createdAt, participant, deadline 
+        FROM assignments 
+        ORDER BY createdAt DESC
       `).all();
       console.log('D1 fetch result:', result);
       return result.results as unknown as AssignmentData[];
@@ -54,29 +66,31 @@ export class D1AssignmentManager {
     }
   }
 
-  // Ambil assignment berdasarkan namaMataKuliah
-  async getAssignmentByNamaMataKuliah(namaMataKuliah: string): Promise<AssignmentData | null> {
+  // Ambil assignment berdasarkan mata_kuliah
+  async getAssignmentByMataKuliah(mataKuliah: string): Promise<AssignmentData | null> {
     const result = await this.db.prepare(`
-      SELECT * FROM assignments WHERE namaMataKuliah = ? LIMIT 1
-    `).bind(namaMataKuliah).first();
+      SELECT id, mata_kuliah, deskripsi, createdAt, participant, deadline 
+      FROM assignments 
+      WHERE mata_kuliah = ? LIMIT 1
+    `).bind(mataKuliah).first();
     
     return result as AssignmentData | null;
   }
 
-  // Hapus assignment berdasarkan namaMataKuliah
-  async deleteAssignmentByNamaMataKuliah(namaMataKuliah: string): Promise<boolean> {
+  // Hapus assignment berdasarkan mata_kuliah
+  async deleteAssignmentByMataKuliah(mataKuliah: string): Promise<boolean> {
     const result = await this.db.prepare(`
-      DELETE FROM assignments WHERE namaMataKuliah = ?
-    `).bind(namaMataKuliah).run();
+      DELETE FROM assignments WHERE mata_kuliah = ?
+    `).bind(mataKuliah).run();
     
     return result.meta.changes > 0;
   }
 
   // Cek apakah assignment ada
-  async assignmentExists(namaMataKuliah: string): Promise<boolean> {
+  async assignmentExists(mataKuliah: string): Promise<boolean> {
     const result = await this.db.prepare(`
-      SELECT COUNT(*) as count FROM assignments WHERE namaMataKuliah = ?
-    `).bind(namaMataKuliah).first();
+      SELECT COUNT(*) as count FROM assignments WHERE mata_kuliah = ?
+    `).bind(mataKuliah).first();
     
     return (result as any).count > 0;
   }

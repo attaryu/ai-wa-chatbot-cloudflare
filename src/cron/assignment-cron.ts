@@ -2,6 +2,21 @@
 import { GroupIds } from '../config/env';
 import { D1AssignmentManager } from '../utils/d1Helpers';
 
+// Function untuk memformat tanggal dari database ke format yang user-friendly
+function formatDateForDisplay(dbDate: string): string {
+  try {
+    const date = new Date(dbDate);
+    return date.toLocaleDateString('id-ID', { 
+      weekday: 'long',
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  } catch (error) {
+    return dbDate; // fallback ke format asli jika error
+  }
+}
+
 export default {
   async scheduled(event: any, env: any, ctx: ExecutionContext) {
     const db = env["db-tugas"];
@@ -15,8 +30,8 @@ export default {
       if (assignments.length > 0) {
         let taskList = "📋 *Reminder Tugas Harian*\n\n";
         assignments.forEach((assignment, idx) => {
-          const deadlineStr = assignment.deadline || '-';
-          taskList += `${idx + 1}. 📚 *${assignment.namaMataKuliah}*\n   📝 ${assignment.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
+          const deadlineStr = assignment.deadline ? formatDateForDisplay(assignment.deadline) : '-';
+          taskList += `${idx + 1}. 📚 *${assignment.mata_kuliah}*\n   📝 ${assignment.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
         });
         
         // Kirim ke grup utama

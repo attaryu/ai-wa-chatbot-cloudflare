@@ -36,6 +36,13 @@ export async function handleTambahTugas(
   }
   const [namaMataKuliah, deskripsi, deadline] = parts;
 
+  // Format deadline ke format database DATETIME
+  const formattedDeadline = formatDateForDatabase(deadline);
+  if (!formattedDeadline) {
+    const errorResponse = "Format tanggal salah! Gunakan format DD/MM/YYYY\n\nContoh: 15/12/2025";
+    return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, errorResponse);
+  }
+
   if (db) {
     try {
       console.log('Database object received:', !!db);
@@ -44,11 +51,11 @@ export async function handleTambahTugas(
       
       const data: AssignmentData = {
         id: generateId(),
-        namaMataKuliah,
+        mata_kuliah: namaMataKuliah, // Sesuaikan dengan schema database
         deskripsi,
-        createdAt: new Date().toISOString(),
+        createdAt: '', // Akan di-set oleh database dengan DEFAULT CURRENT_TIMESTAMP
         participant,
-        deadline: deadline || undefined
+        deadline: formattedDeadline
       };
       console.log('Attempting to save assignment:', data);
       await manager.saveAssignment(data);
@@ -62,7 +69,7 @@ export async function handleTambahTugas(
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Database tidak tersedia");
   }
 
-  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah}\n📝 Deskripsi: ${deskripsi}\n⏰ Deadline: ${deadline}\n🗓️ Ditambahkan: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
+  const successResponse = `✅ Tugas berhasil ditambahkan!\n\n📚 Mata Kuliah: ${namaMataKuliah}\n📝 Deskripsi: ${deskripsi}\n⏰ Deadline: ${formatDateForDisplay(formattedDeadline)}\n🗓️ Ditambahkan: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
   return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, successResponse);
 }
 
@@ -90,8 +97,8 @@ export async function handleLihatTugas(
 
     let taskList = "📋 *DAFTAR TUGAS*\n\n";
     assignments.forEach((item: AssignmentData, idx: number) => {
-      const deadlineStr = item.deadline || '-';
-      taskList += `${idx + 1}. 📚 *${item.namaMataKuliah}*\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
+      const deadlineStr = item.deadline ? formatDateForDisplay(item.deadline) : '-';
+      taskList += `${idx + 1}. 📚 *${item.mata_kuliah}*\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
     });
 
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, taskList);
@@ -125,7 +132,7 @@ export async function handleHapusTugas(
     }
     
     // Hapus tugas
-    const deleted = await manager.deleteAssignmentByNamaMataKuliah(namaTugas);
+    const deleted = await manager.deleteAssignmentByMataKuliah(namaTugas);
     if (deleted) {
       const response = `🗑️ Tugas berhasil dihapus!\n\n📚 Nama Tugas: ${namaTugas}`;
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, response);
@@ -175,6 +182,42 @@ CRON:
   return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, helpText);
 }
 
+// Function untuk mengkonversi format tanggal DD/MM/YYYY ke YYYY-MM-DD HH:MM:SS
+function formatDateForDatabase(dateInput: string): string | null {
+  try {
+    // Expected format: DD/MM/YYYY
+    const parts = dateInput.split('/');
+    if (parts.length !== 3) return null;
+    
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    
+    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 2020) return null;
+    
+    // Format ke YYYY-MM-DD HH:MM:SS (set waktu ke 23:59:59 sebagai deadline)
+    const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} 23:59:59`;
+    return formattedDate;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return null;
+  }
+}
+
+// Function untuk memformat tanggal dari database ke format yang user-friendly
+function formatDateForDisplay(dbDate: string): string {
+  try {
+    const date = new Date(dbDate);
+    return date.toLocaleDateString('id-ID', { 
+      weekday: 'long',
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  } catch (error) {
+    return dbDate; // fallback ke format asli jika error
+  }
+}
 
 // Helper function untuk mengirim pesan
 async function sendMessage(

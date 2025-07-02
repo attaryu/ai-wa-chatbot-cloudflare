@@ -49,7 +49,7 @@
 	 * https://developers.cloudflare.com/workers/configuration/cron-triggers/
 	 */
   "triggers": {
-	"crons": ["1 17 * * *"]
+	"crons": ["1 17 * * *"] // ubah jadi pagi ajasih
   },
 
   "d1_databases": [
