@@ -22,11 +22,26 @@ function isDeadlineToday(deadline: string): boolean {
   if (!deadline) return false;
   const today = new Date();
   const deadlineDate = new Date(deadline);
-  return (
+  
+  // Debug log untuk melihat tanggal hari ini vs deadline
+  console.log("=== DEBUG isDeadlineToday ===");
+  console.log("Input deadline:", deadline);
+  console.log("Today (raw):", today.toISOString());
+  console.log("Today (local):", today.toLocaleDateString('id-ID'));
+  console.log("Today parts - Year:", today.getFullYear(), "Month:", today.getMonth(), "Date:", today.getDate());
+  console.log("Deadline (parsed):", deadlineDate.toISOString());
+  console.log("Deadline (local):", deadlineDate.toLocaleDateString('id-ID'));
+  console.log("Deadline parts - Year:", deadlineDate.getFullYear(), "Month:", deadlineDate.getMonth(), "Date:", deadlineDate.getDate());
+  
+  const isToday = (
     today.getFullYear() === deadlineDate.getFullYear() &&
     today.getMonth() === deadlineDate.getMonth() &&
     today.getDate() === deadlineDate.getDate()
   );
+  
+  console.log("Match result:", isToday);
+  console.log("=== END DEBUG ===");
+  return isToday;
 }
 
 // Helper: cek apakah deadline sudah lewat (hanya tanggal, abaikan jam)
@@ -36,6 +51,14 @@ function isDeadlinePast(deadline: string): boolean {
   today.setHours(0,0,0,0);
   const deadlineDate = new Date(deadline);
   deadlineDate.setHours(0,0,0,0);
+  
+  console.log("=== DEBUG isDeadlinePast ===");
+  console.log("Input deadline:", deadline);
+  console.log("Today (normalized):", today.toISOString());
+  console.log("Deadline (normalized):", deadlineDate.toISOString());
+  console.log("Is past?", deadlineDate < today);
+  console.log("=== END DEBUG PAST ===");
+  
   return deadlineDate < today;
 }
 
@@ -44,18 +67,28 @@ export default {
     const db = env["db-tugas"];
     
     try {
+      console.log("=== STARTING ASSIGNMENT CRON ===");
+      console.log("Current time:", new Date().toISOString());
+      console.log("Current time (local):", new Date().toLocaleDateString('id-ID'));
+      
       // Ambil semua tugas dari D1
       const manager = new D1AssignmentManager(db);
-      console.log("Database connected:", !!db);
-      
       const assignments = await manager.getAllAssignments();
       console.log("Total assignments found:", assignments.length);
       
+      // Debug: print all assignments with their deadlines
+      console.log("=== ALL ASSIGNMENTS ===");
+      assignments.forEach((assignment, idx) => {
+        console.log(`${idx + 1}. ${assignment.mata_kuliah} - Deadline: ${assignment.deadline}`);
+      });
+      
       // Filter tugas yang deadline-nya hari ini
+      console.log("=== FILTERING TODAY'S ASSIGNMENTS ===");
       const todayAssignments = assignments.filter(a => isDeadlineToday(a.deadline || ''));
-      console.log("Today assignments:", todayAssignments.length, todayAssignments);
+      console.log("Today assignments count:", todayAssignments.length);
       
       // Filter tugas yang deadline-nya sudah lewat
+      console.log("=== FILTERING PAST ASSIGNMENTS ===");
       const pastAssignments = assignments.filter(a => isDeadlinePast(a.deadline || ''));
       console.log("Past assignments to delete:", pastAssignments.length);
 
@@ -74,7 +107,8 @@ export default {
         
         // Kirim ke grup utama
         const targetGroupId = GroupIds[1]; // ambil grup kedua dari env
-        console.log("Sending reminder to group:", targetGroupId, "with text:", taskList);
+        console.log("Sending reminder to group:", targetGroupId);
+        console.log("Message to send:", taskList);
         
         if (targetGroupId) {
           const baseUrl = await env.base_url_name.get();
@@ -104,10 +138,12 @@ export default {
           console.error("Target group ID is empty or undefined");
         }
       } else {
-        console.log("No assignments with deadline today");
+        console.log("No assignments with deadline today - no message sent");
       }
+      
+      console.log("=== ASSIGNMENT CRON COMPLETED ===");
     } catch (error) {
-      console.error('Assignment cron error:', error);
+      console.error("Error in assignment cron:", error);
     }
   },
 };
