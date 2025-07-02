@@ -46,17 +46,22 @@ export default {
     try {
       // Ambil semua tugas dari D1
       const manager = new D1AssignmentManager(db);
-      // await manager.initializeTable();
+      console.log("Database connected:", !!db);
+      
       const assignments = await manager.getAllAssignments();
+      console.log("Total assignments found:", assignments.length);
       
       // Filter tugas yang deadline-nya hari ini
       const todayAssignments = assignments.filter(a => isDeadlineToday(a.deadline || ''));
-      console.log("Today assignments:", todayAssignments);
+      console.log("Today assignments:", todayAssignments.length, todayAssignments);
+      
       // Filter tugas yang deadline-nya sudah lewat
       const pastAssignments = assignments.filter(a => isDeadlinePast(a.deadline || ''));
+      console.log("Past assignments to delete:", pastAssignments.length);
 
       // Hapus tugas yang deadline-nya sudah lewat
       for (const past of pastAssignments) {
+        console.log("Deleting past assignment:", past.mata_kuliah);
         await manager.deleteAssignmentByMataKuliah(past.mata_kuliah);
       }
 
@@ -66,25 +71,40 @@ export default {
           const deadlineStr = assignment.deadline ? formatDateForDisplay(assignment.deadline) : '-';
           taskList += `${idx + 1}. 📚 *${assignment.mata_kuliah}*\n   📝 ${assignment.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
         });
+        
         // Kirim ke grup utama
         const targetGroupId = GroupIds[1]; // ambil grup kedua dari env
+        console.log("Sending reminder to group:", targetGroupId, "with text:", taskList);
+        
         if (targetGroupId) {
-          console.log("Sending reminder to group:", targetGroupId, "with text:", taskList);
-          await fetch(`${await env.base_url_name.get()}/api/sendText`, {
+          const baseUrl = await env.base_url_name.get();
+          const apiKey = await env.api_key.get();
+          const session = await env.session_name.get();
+          
+          console.log("API details:", { baseUrl, apiKey: !!apiKey, session: !!session });
+          
+          const response = await fetch(`${baseUrl}/api/sendText`, {
             method: "POST",
             headers: {
               "accept": "application/json",
               "Content-Type": "application/json",
-              "X-Api-Key": await env.api_key.get(),
+              "X-Api-Key": apiKey,
             },
             body: JSON.stringify({
-              chatId: "120363183408730771@g.us",
+              chatId: targetGroupId,
               reply_to: null,
               text: taskList,
-              session: await env.session_name.get(),
+              session: session,
             }),
           });
+          
+          const result = await response.text();
+          console.log("WhatsApp API response:", response.status, result);
+        } else {
+          console.error("Target group ID is empty or undefined");
         }
+      } else {
+        console.log("No assignments with deadline today");
       }
     } catch (error) {
       console.error('Assignment cron error:', error);
