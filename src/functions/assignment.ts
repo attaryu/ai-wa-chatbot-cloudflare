@@ -98,7 +98,7 @@ export async function handleLihatTugas(
     let taskList = "📋 *DAFTAR TUGAS*\n\n";
     assignments.forEach((item: AssignmentData, idx: number) => {
       const deadlineStr = item.deadline ? formatDateForDisplay(item.deadline) : '-';
-      taskList += `${idx + 1}. 📚 *${item.mata_kuliah}*\n   📝 ${item.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
+      taskList += `${idx + 1}. *${item.mata_kuliah}*\n ${item.deskripsi}\n ⏰ Deadline: ${deadlineStr}\n\n`;
     });
 
     return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, taskList);

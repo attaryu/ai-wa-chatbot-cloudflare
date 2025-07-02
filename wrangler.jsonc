@@ -48,9 +48,10 @@
 	 * Cron Triggers
 	 * https://developers.cloudflare.com/workers/configuration/cron-triggers/
 	 */
-  "triggers": {
-	"crons": ["1 17 * * *"] // ubah jadi pagi ajasih
-  },
+"triggers": {
+	// Runs every day at 01:45 GMT+7 (which is 18:45 UTC the previous day)
+	"crons": ["45 18 * * *"]
+},
 
   "d1_databases": [
 	{

@@ -17,6 +17,28 @@ function formatDateForDisplay(dbDate: string): string {
   }
 }
 
+// Helper: cek apakah deadline sama dengan hari ini (hanya tanggal, abaikan jam)
+function isDeadlineToday(deadline: string): boolean {
+  if (!deadline) return false;
+  const today = new Date();
+  const deadlineDate = new Date(deadline);
+  return (
+    today.getFullYear() === deadlineDate.getFullYear() &&
+    today.getMonth() === deadlineDate.getMonth() &&
+    today.getDate() === deadlineDate.getDate()
+  );
+}
+
+// Helper: cek apakah deadline sudah lewat (hanya tanggal, abaikan jam)
+function isDeadlinePast(deadline: string): boolean {
+  if (!deadline) return false;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const deadlineDate = new Date(deadline);
+  deadlineDate.setHours(0,0,0,0);
+  return deadlineDate < today;
+}
+
 export default {
   async scheduled(event: any, env: any, ctx: ExecutionContext) {
     const db = env["db-tugas"];
@@ -27,13 +49,22 @@ export default {
       // await manager.initializeTable();
       const assignments = await manager.getAllAssignments();
       
-      if (assignments.length > 0) {
-        let taskList = "📋 *Reminder Tugas Harian*\n\n";
-        assignments.forEach((assignment, idx) => {
+      // Filter tugas yang deadline-nya hari ini
+      const todayAssignments = assignments.filter(a => isDeadlineToday(a.deadline || ''));
+      // Filter tugas yang deadline-nya sudah lewat
+      const pastAssignments = assignments.filter(a => isDeadlinePast(a.deadline || ''));
+
+      // Hapus tugas yang deadline-nya sudah lewat
+      for (const past of pastAssignments) {
+        await manager.deleteAssignmentByMataKuliah(past.mata_kuliah);
+      }
+
+      if (todayAssignments.length > 0) {
+        let taskList = "📋 *Reminder Tugas Deadline Hari Ini*\n\n";
+        todayAssignments.forEach((assignment, idx) => {
           const deadlineStr = assignment.deadline ? formatDateForDisplay(assignment.deadline) : '-';
           taskList += `${idx + 1}. 📚 *${assignment.mata_kuliah}*\n   📝 ${assignment.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
         });
-        
         // Kirim ke grup utama
         const targetGroupId = GroupIds[1]; // ambil grup kedua dari env
         if (targetGroupId) {

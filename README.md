@@ -9,3 +9,21 @@ CREATE TABLE IF NOT EXISTS assignments (
   deadline TEXT
 );
 
+## Roadmap
+- [x] help command
+- [x] presensi
+- [x] command sederhana /pagi dan /malam
+- [x] integrasikan database kv (cpet jadi dlu)
+- [x] tambahkan function ai
+- [x] test ai cron 
+- [x] tambahkan cron 
+- [x] optimalkan cron reminder
+- [x] tambah function toxic check
+- [x] ganti db kv dgn db 1
+- [x] crud tugas dari db 1
+- [x] presensi
+- [x] presensi
+- [x] presensi
+- [x] presensi
+- [x] presensi
+- [ ] terapkan media penyimpanan
