@@ -40,7 +40,7 @@ export async function handleTambahTugas(
     try {
       console.log('Database object received:', !!db);
       const manager = new D1AssignmentManager(db);
-      await manager.initializeTable();
+      // await manager.initializeTable();
       
       const data: AssignmentData = {
         id: generateId(),
@@ -82,7 +82,7 @@ export async function handleLihatTugas(
   try {
     // Ambil semua assignment dari D1
     const manager = new D1AssignmentManager(db);
-    await manager.initializeTable();
+    // await manager.initializeTable();
     const assignments = await manager.getAllAssignments();
     if (assignments.length === 0) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "📝 Belum ada tugas yang tersimpan");
@@ -116,7 +116,7 @@ export async function handleHapusTugas(
   }
   try {
     const manager = new D1AssignmentManager(db);
-    await manager.initializeTable();
+    // await manager.initializeTable();
     
     // Cek apakah tugas ada
     const exists = await manager.assignmentExists(namaTugas);

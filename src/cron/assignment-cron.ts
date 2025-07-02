@@ -9,7 +9,7 @@ export default {
     try {
       // Ambil semua tugas dari D1
       const manager = new D1AssignmentManager(db);
-      await manager.initializeTable();
+      // await manager.initializeTable();
       const assignments = await manager.getAllAssignments();
       
       if (assignments.length > 0) {

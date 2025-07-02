@@ -5,31 +5,16 @@ export interface AssignmentData {
   deskripsi: string;
   createdAt: string;
   participant: string;
-  deadline?: string; // string format untuk D1
+  deadline?: string;
 }
 
-// D1 Operations untuk Assignment (Task/Reminder)
 export class D1AssignmentManager {
   constructor(private db: D1Database) {}
 
-  // Initialize database table
+  // Skip auto table creation, assume table already exists
   async initializeTable(): Promise<void> {
-    try {
-      await this.db.exec(`
-        CREATE TABLE IF NOT EXISTS assignments (
-          id TEXT PRIMARY KEY,
-          namaMataKuliah TEXT NOT NULL,
-          deskripsi TEXT NOT NULL,
-          createdAt TEXT NOT NULL,
-          participant TEXT NOT NULL,
-          deadline TEXT
-        )
-      `);
-      console.log('D1 Table initialized successfully');
-    } catch (error) {
-      console.error('Error initializing D1 table:', error);
-      throw error;
-    }
+    // Table should be created manually via migration
+    console.log('Skipping table initialization - assuming table exists');
   }
 
   // Simpan assignment baru
