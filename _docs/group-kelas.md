@@ -1,7 +1,7 @@
 ## Command
 - `/presensi` - tag everyone to remind about presense
 - `/week` - sekarang minggu kuliah ke berapa
-- `/random-wheel` - mengurutkan secara acak urutan maju tiap nrp
+- `/random-wheel` - mengurutkan secara acak urutan maju tiap nrp (tpi keknya gakepake)
 
 ## Feature
 - Save asssignment using ai for structured data

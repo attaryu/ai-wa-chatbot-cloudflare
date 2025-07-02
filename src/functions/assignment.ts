@@ -131,25 +131,25 @@ export async function handleHelp(
   chatId: string,
   reply_to: string
 ) {
-  const helpText = `🤖 *BANTUAN COMMAND BOT*
+  const helpText = `🤖 *BOT Kuliyah*
 
 📝 *MANAJEMEN TUGAS:*
 • \`/tugas [nama tugas]\` - Menambah tugas baru
 • \`/list-tugas\` - Melihat semua tugas
 • \`/hapus [nama tugas]\` - Hapus tugas
 
-👋 *SAPAAN:*
-• \`/pagi\` - Sapaan pagi
-• \`/malam\` - Sapaan malam
+CRON:
+• Reminder tugas tenggat hari ini
+• Rekap tugas tiap minggu
 
 👥 *GRUP:*
-• \`/presensi\` - Mention semua member
+• \`/presensi\` - Mention semua member untuk melakukan presensi
 
 🤖 *AI:*
 • \`/ai [pertanyaan]\` - Tanya AI
 
 ℹ️ *BANTUAN:*
-• \`/help\` - Tampilkan bantuan ini
+• \`/help\` - Tampilkan bantuan command
 
 *Contoh penggunaan:*
 \`/tugas Data Mining\`
