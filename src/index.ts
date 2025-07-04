@@ -13,6 +13,7 @@ import {
 } from "./functions";
 import { aiCronTest } from "./cron/ai-cron-test";
 import assignmentCron from "./cron/assignment-cron";
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 import { D1AssignmentManager } from './utils/d1Helpers';
 
@@ -207,11 +208,9 @@ export default {
           });
 
           // Post-process: ganti ** jadi *, hapus semua baris yang hanya berisi pagra
-          let tugas = result.object.tugas
-            .replace(/\*\*/g, '*') // ganti ** jadi *
-            .replace(/^pagra.*$/gim, '') // hapus baris yang hanya berisi pagra (case-insensitive)
-            .replace(/\n{2,}/g, '\n') // rapikan double newline
-            .trim();
+            let tugas = result.object.tugas
+              .replace(/\*\*/g, '*') // ganti ** jadi *
+              .replace(/^#+\s*/gm, ''); // hapus simbol # di awal baris (contoh: #, ##, ## )
 
           const apiUrl = baseUrl + "/api/sendText";
           const bodyData = {
@@ -272,3 +271,4 @@ export default {
     }
   },
 };
+
