@@ -14,6 +14,10 @@ import {
 import { aiCronTest } from "./cron/ai-cron-test";
 import assignmentCron from "./cron/assignment-cron";
 
+import { D1AssignmentManager } from './utils/d1Helpers';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from 'ai';
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
@@ -181,13 +185,53 @@ export default {
 
       if (text?.startsWith("/ai") && chatId && reply_to) {
         try {
-          // Pass db instance ke handleAIResponse agar tools agent bisa akses D1
-          const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text, openrouterKey, env["db-tugas"]);
-          return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+          // Ambil semua data assignments dari D1 dan jadikan context
+          const db = env["db-tugas"];
+          const manager = new D1AssignmentManager(db);
+          const assignments = await manager.getAllAssignments();
+          const contextString = assignments.map(a =>
+            `- [${a.mata_kuliah}] ${a.deskripsi} (Deadline: ${a.deadline || '-'} | By: ${a.participant})`
+          ).join("\n");
+
+          const openrouter = createOpenRouter({ apiKey: openrouterKey });
+          const { text: aiText } = await generateText({
+            model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
+            prompt: `Berikut adalah daftar tugas di database:\n${contextString}\n\nJawab pertanyaan user atau bantu sesuai konteks tugas di atas.\nPertanyaan user: ${text.replace('/ai', '').trim()}`,
+          });
+
+          const apiUrl = baseUrl + "/api/sendText";
+          const bodyData = {
+            chatId: chatId,
+            reply_to: reply_to,
+            text: aiText,
+            session: session,
+          };
+
+          const apiResp = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "accept": "application/json",
+              "Content-Type": "application/json",
+              "X-Api-Key": APIkey,
+            },
+            body: JSON.stringify(bodyData),
+          });
+
+          const apiResult = await apiResp.text();
+          return new Response(JSON.stringify({ status: "sent", sent: bodyData, apiResult, assignments }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
         }
       }
+
+      // if (text === "/list-tugas" && chatId && reply_to && PersonalIds.includes(participant)) {
+      //   try {
+      //     const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env["db-tugas"]);
+      //     return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      //   } catch (e: any) {
+      //     return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      //   }
+      // }
 
       if (text === "/dev" && chatId && reply_to) {
         try {

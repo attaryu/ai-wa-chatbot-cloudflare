@@ -1,0 +1,43 @@
+
+import { Agent } from "agents";
+import { generateText } from "ai";
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { D1AssignmentManager } from '../utils/d1Helpers';
+import { getWorkerEnv } from "../config/env";
+
+export interface AssignmentData {
+  id: string;
+  mata_kuliah: string;
+  deskripsi: string;
+  createdAt: string;
+  participant: string;
+  deadline?: string;
+}
+
+export class MyAgent extends Agent<Env> {
+  async onRequest(request: Request): Promise<Response> {
+    // Extract env from the request if your framework provides it, otherwise adjust as needed
+    // @ts-ignore
+    const { openrouterKey } = await getWorkerEnv(env);
+    const env: Env = (request as any).env;
+    const db = env["db-tugas"];
+    const manager = new D1AssignmentManager(db);
+    const assignments = await manager.getAllAssignments();
+
+    // Jadikan assignments sebagai context untuk LLM
+    const contextString = assignments.map(a =>
+      `- [${a.mata_kuliah}] ${a.deskripsi} (Deadline: ${a.deadline || '-'} | By: ${a.participant})`
+    ).join("\n");
+
+    const openrouter = createOpenRouter({
+      apiKey: openrouterKey,
+    });
+
+    const { text } = await generateText({
+      model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
+      prompt: `Berikut adalah daftar tugas di database:\n${contextString}\n\nJawab pertanyaan user atau bantu sesuai konteks tugas di atas.`,
+    });
+
+    return Response.json({ modelResponse: text, assignments });
+  }
+}
