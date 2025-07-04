@@ -6,12 +6,10 @@ import {
   handleLihatTugas,
   handleHapusTugas,
   handleHelp,
-  handleAIResponse,
   checkToxic,
   getToxicWarning,
   handleDevInfo,
 } from "./functions";
-import { aiCronTest } from "./cron/ai-cron-test";
 import assignmentCron from "./cron/assignment-cron";
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
@@ -271,4 +269,3 @@ export default {
     }
   },
 };
-
