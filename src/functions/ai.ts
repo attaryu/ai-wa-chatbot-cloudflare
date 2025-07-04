@@ -42,19 +42,18 @@ export async function basicCommands(
     if (!prompt) prompt = 'yo, tanyakan padaku tentang tugas ataupun itu';
   }
 
+  // Tool agent: getAllAssignments dari D1AssignmentManager
   const { text } = await generateText({
     model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
     tools: {
-      database_tugas: tool({
-        description: 'Get the database of assignments',
-        parameters: z.object({
-          query: z.string().describe('Query for assignments, e.g. "all"'),
-        }),
-        execute: async ({ query }) => {
+      getAllAssignments: tool({
+        description: 'Ambil semua data assignments dari database D1',
+        parameters: z.object({}),
+        // Explicitly type the execute function to avoid deep type inference
+        execute: async (_params: Record<string, never>): Promise<{ assignments?: any; error?: string }> => {
           if (!db) return { error: "Database not available" };
           const manager = new D1AssignmentManager(db);
           const assignments = await manager.getAllAssignments();
-          // Return as array of objects
           return { assignments };
         },
       }),
