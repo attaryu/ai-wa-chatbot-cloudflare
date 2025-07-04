@@ -1,6 +1,6 @@
 const TOXIC_WORDS = [
   "anjing", "babi", "bangsat", "kontol", "memek", "goblok", "tolol",
-  "ngentot", "brengsek", "setan", "jancok", "bajingan", "keparat"
+  "ngentot", "brengsek", "setan", "jancok", "bajingan", "keparat", "nigger"
 ];
 
 export function checkToxic(text: string): { isToxic: boolean, found: string[] } {

@@ -89,7 +89,7 @@ export default {
         let taskList = "📋 *Reminder Tugas Deadline Hari Ini*\n\n";
         todayAssignments.forEach((assignment, idx) => {
           const deadlineStr = assignment.deadline ? formatDateForDisplay(assignment.deadline) : '-';
-          taskList += `${idx + 1}. 📚 *${assignment.mata_kuliah}*\n   📝 ${assignment.deskripsi}\n   ⏰ Deadline: ${deadlineStr}\n\n`;
+          taskList += `${idx + 1}. *${assignment.mata_kuliah}*\n ${assignment.deskripsi}\n Deadline: ${deadlineStr}\n\n`;
         });
         
         // Kirim ke grup utama

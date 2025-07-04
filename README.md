@@ -24,5 +24,5 @@ CREATE TABLE IF NOT EXISTS assignments (
 - [x] list tugas
 - [x] terapkan secret store binding
 - [x] modular dev id dan group id
-- [x] 
+- [ ] ngurutin prioritas list tugas
 - [ ] terapkan media penyimpanan
