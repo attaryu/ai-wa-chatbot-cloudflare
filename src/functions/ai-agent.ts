@@ -4,6 +4,8 @@ import { generateText } from "ai";
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { D1AssignmentManager } from '../utils/d1Helpers';
 import { getWorkerEnv } from "../config/env";
+import { generateObject } from 'ai';
+import { z } from "zod";
 
 export interface AssignmentData {
   id: string;
@@ -33,11 +35,19 @@ export class MyAgent extends Agent<Env> {
       apiKey: openrouterKey,
     });
 
-    const { text } = await generateText({
+    const result = await generateObject({
       model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
+      schema: z.object({
+          tugas: z.string(),
+      }),
+      system:
+        'Kamu adalah asisten handal untuk mahasiswa' +
+        'Jawab pertanyaan user dengan informasi yang relevan dari daftar tugas yang ada di database.' +
+        'Jika tidak ada informasi yang relevan, berikan jawaban umum yang sesuai.' +
+        'Jawab sesingkat mungkin, tidak lebih dari 50 kata',
       prompt: `Berikut adalah daftar tugas di database:\n${contextString}\n\nJawab pertanyaan user atau bantu sesuai konteks tugas di atas.`,
     });
 
-    return Response.json({ modelResponse: text, assignments });
+    return Response.json({ modelResponse: result, assignments });
   }
 }
