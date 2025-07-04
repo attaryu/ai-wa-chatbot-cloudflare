@@ -15,8 +15,9 @@ import { aiCronTest } from "./cron/ai-cron-test";
 import assignmentCron from "./cron/assignment-cron";
 
 import { D1AssignmentManager } from './utils/d1Helpers';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { generateText } from 'ai';
+
+import { generateObject } from 'ai';
+import { z } from "zod";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -194,16 +195,29 @@ export default {
           ).join("\n");
 
           const openrouter = createOpenRouter({ apiKey: openrouterKey });
-          const { text: aiText } = await generateText({
+          const result = await generateObject({
             model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
+            schema: z.object({ tugas: z.string() }),
+            system:
+              'Kamu adalah asisten handal untuk mahasiswa' +
+              'Jawab pertanyaan user dengan informasi yang relevan dari daftar tugas yang ada di database.' +
+              'Jika tidak ada informasi yang relevan, berikan jawaban umum yang sesuai.' +
+              'Jawab sesingkat mungkin, tidak lebih dari 50 kata',
             prompt: `Berikut adalah daftar tugas di database:\n${contextString}\n\nJawab pertanyaan user atau bantu sesuai konteks tugas di atas.\nPertanyaan user: ${text.replace('/ai', '').trim()}`,
           });
+
+          // Post-process: ganti ** jadi *, hapus semua baris yang hanya berisi pagra
+          let tugas = result.object.tugas
+            .replace(/\*\*/g, '*') // ganti ** jadi *
+            .replace(/^pagra.*$/gim, '') // hapus baris yang hanya berisi pagra (case-insensitive)
+            .replace(/\n{2,}/g, '\n') // rapikan double newline
+            .trim();
 
           const apiUrl = baseUrl + "/api/sendText";
           const bodyData = {
             chatId: chatId,
             reply_to: reply_to,
-            text: aiText,
+            text: tugas,
             session: session,
           };
 

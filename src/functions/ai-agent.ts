@@ -48,6 +48,13 @@ export class MyAgent extends Agent<Env> {
       prompt: `Berikut adalah daftar tugas di database:\n${contextString}\n\nJawab pertanyaan user atau bantu sesuai konteks tugas di atas.`,
     });
 
-    return Response.json({ modelResponse: result, assignments });
+    // Post-process: ganti ** jadi *, hapus semua baris yang hanya berisi pagra
+    let tugas = result.object.tugas
+      .replace(/\*\*/g, '*') // ganti ** jadi *
+      .replace(/^pagra.*$/gim, '') // hapus baris yang hanya berisi pagra (case-insensitive)
+      .replace(/\n{2,}/g, '\n') // rapikan double newline
+      .trim();
+
+    return Response.json({ modelResponse: { ...result, tugas }, assignments });
   }
 }
