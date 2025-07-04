@@ -24,7 +24,7 @@ export async function basicCommands(
   command: string,
   customResponse?: string,
   fullMessage?: string, // tambahkan argumen untuk pesan penuh
-  openRouterKey?: string // tambahkan argumen untuk openrouter key
+  openRouterKey?: string, // tambahkan argumen untuk openrouter key
   db?: D1Database // pastikan argumen db diteruskan
 
 ) {
@@ -96,7 +96,8 @@ export async function handleAIResponse(
   chatId: string,
   reply_to: string,
   fullMessage?: string, // tambahkan argumen untuk pesan penuh
-  openRouterKey?: string // tambahkan argumen untuk openrouter key
+  openRouterKey?: string, // tambahkan argumen untuk openrouter key
+  db?: D1Database // tambahkan argumen db
 ) {
-  return await basicCommands(baseUrl, session, apiKey, chatId, reply_to, "/ai", undefined, fullMessage, openRouterKey);
+  return await basicCommands(baseUrl, session, apiKey, chatId, reply_to, "/ai", undefined, fullMessage, openRouterKey, db);
 }

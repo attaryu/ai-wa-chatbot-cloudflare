@@ -35,18 +35,6 @@ export default {
       return new Response("Cloudflare Worker Webhook is ready!", { status: 200, headers: corsHeaders });
     }
 
-    // Route untuk trigger assignment cron secara manual
-    if (url.pathname === "/trigger-assignment-cron" && request.method === "GET") {
-      try {
-        console.log("Manual trigger assignment cron");
-        await assignmentCron.scheduled(null, env, null as any);
-        return new Response("Assignment cron triggered successfully", { status: 200, headers: corsHeaders });
-      } catch (error) {
-        console.error("Error triggering assignment cron:", error);
-        return new Response("Error triggering assignment cron", { status: 500, headers: corsHeaders });
-      }
-    }
-
     // Route /event
     if (url.pathname === "/event" && request.method === "POST") {
       let data: any;
@@ -193,7 +181,8 @@ export default {
 
       if (text?.startsWith("/ai") && chatId && reply_to) {
         try {
-          const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text, openrouterKey);
+          // Pass db instance ke handleAIResponse agar tools agent bisa akses D1
+          const result = await handleAIResponse(baseUrl, session, APIkey, chatId, reply_to, text, openrouterKey, env["db-tugas"]);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
