@@ -25,6 +25,8 @@ export async function basicCommands(
   customResponse?: string,
   fullMessage?: string, // tambahkan argumen untuk pesan penuh
   openRouterKey?: string // tambahkan argumen untuk openrouter key
+  db?: D1Database // pastikan argumen db diteruskan
+
 ) {
   // Initialize openrouter dengan API key dari environment
   if (openRouterKey) {
@@ -37,7 +39,7 @@ export async function basicCommands(
   // Jika command adalah /ai dan ada fullMessage, ambil kalimat setelah /ai
   if (command === '/ai' && fullMessage) {
     prompt = fullMessage.replace('/ai', '').trim();
-    if (!prompt) prompt = 'Halo! Ada yang bisa saya bantu?';
+    if (!prompt) prompt = 'yo, tanyakan padaku tentang tugas ataupun itu';
   }
 
   const { text } = await generateText({

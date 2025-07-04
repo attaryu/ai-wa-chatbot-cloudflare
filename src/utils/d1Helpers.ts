@@ -56,7 +56,7 @@ export class D1AssignmentManager {
       const result = await this.db.prepare(`
         SELECT id, mata_kuliah, deskripsi, createdAt, participant, deadline 
         FROM assignments 
-        ORDER BY createdAt DESC
+        ORDER BY deadline DESC
       `).all();
       console.log('D1 fetch result:', result);
       return result.results as unknown as AssignmentData[];
