@@ -1,5 +1,7 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { generateText } from 'ai';
+import { generateText, tool } from 'ai';
+import { z } from 'zod';
+import { D1AssignmentManager } from '../utils/d1Helpers'; // pastikan path sesuai
 
 let openrouter: any;
 
@@ -9,7 +11,7 @@ interface CommandMapping {
 
 // Predefined command responses
 export const COMMAND_RESPONSES: CommandMapping = {
-  "/ai": "selamat pagi bang, saya siap membantu anda",
+  "/ai": "yo, tanyakan padaku tentang tugas ataupun itu",
 };
 
 // Basic command handler yang fleksibel
@@ -40,6 +42,22 @@ export async function basicCommands(
 
   const { text } = await generateText({
     model: openrouter.chat('mistralai/mistral-small-3.2-24b-instruct:free'),
+    tools: {
+      database_tugas: tool({
+        description: 'Get the database of assignments',
+        parameters: z.object({
+          query: z.string().describe('Query for assignments, e.g. "all"'),
+        }),
+        execute: async ({ query }) => {
+          if (!db) return { error: "Database not available" };
+          const manager = new D1AssignmentManager(db);
+          const assignments = await manager.getAllAssignments();
+          // Return as array of objects
+          return { assignments };
+        },
+      }),
+    },
+    maxSteps: 2,
     prompt,
   });
 

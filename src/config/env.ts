@@ -15,7 +15,6 @@ export const PersonalIds = [
 //   "6281234567890@c.us", 
 ];
 
-
 export async function getWorkerEnv(env: any) {
   const APIkey = await env.api_key.get()
   const baseUrl = await env.base_url_name.get()
