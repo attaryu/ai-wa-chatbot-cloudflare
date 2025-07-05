@@ -1,6 +1,6 @@
 // Cron untuk reminder assignment (menggunakan D1 database)
 import { GroupIds } from '../config/env';
-import { D1AssignmentManager } from '../utils/d1Helpers';
+import { D1AssignmentManager } from '../db/d1Helpers';
 
 // Function untuk memformat tanggal dari database ke format yang user-friendly
 function formatDateForDisplay(dbDate: string): string {

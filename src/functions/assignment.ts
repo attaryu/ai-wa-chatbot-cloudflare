@@ -1,4 +1,4 @@
-import { D1AssignmentManager, AssignmentData, generateId } from '../utils/d1Helpers';
+import { D1AssignmentManager, AssignmentData, generateId } from '../db/d1Helpers';
 
 // Interface untuk command mapping
 interface CommandMapping {

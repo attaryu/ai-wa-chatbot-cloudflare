@@ -2,7 +2,7 @@
 import { Agent } from "agents";
 import { generateText } from "ai";
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { D1AssignmentManager } from '../utils/d1Helpers';
+import { D1AssignmentManager } from '../db/d1Helpers';
 import { getWorkerEnv } from "../config/env";
 import { generateObject } from 'ai';
 import { z } from "zod";

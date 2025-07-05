@@ -13,7 +13,7 @@ import {
 import assignmentCron from "./cron/assignment-cron";
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
-import { D1AssignmentManager } from './utils/d1Helpers';
+import { D1AssignmentManager } from './db/d1Helpers';
 
 import { generateObject } from 'ai';
 import { z } from "zod";
