@@ -25,7 +25,7 @@ const corsHeaders = {
 };
 
 export default {
-  async fetch(request: Request, env: any): Promise<Response> {
+  async fetch(request, env): Promise<Response> {
     const { APIkey, baseUrl, session, openrouterKey } = await getWorkerEnv(env);
     const url = new URL(request.url);
 
@@ -42,6 +42,7 @@ export default {
     // Route /event
     if (url.pathname === "/event" && request.method === "POST") {
       let data: any;
+
       try {
         data = await request.json();
       } catch {
@@ -56,11 +57,11 @@ export default {
       //   if (groupPayload.type === "join" && groupPayload.group && groupPayload.participants) {
       //     const groupId = groupPayload.group.id;
       //     const joinedParticipants = groupPayload.participants;
-          
+
       //     for (const participant of joinedParticipants) {
       //       const participantId = participant.id;
       //       const welcomeMessage = `🎉 Selamat datang @${participantId.replace("@c.us", "")} di grup ini!\n\nSemoga betah dan aktif ya! 😊`;
-            
+
       //       try {
       //         await fetch(baseUrl + "/api/sendText", {
       //           method: "POST",
@@ -80,10 +81,10 @@ export default {
       //         console.error("Error sending welcome message:", error);
       //       }
       //     }
-          
-      //     return new Response(JSON.stringify({ status: "welcome message sent" }), { 
-      //       status: 200, 
-      //       headers: { "Content-Type": "application/json", ...corsHeaders } 
+
+      //     return new Response(JSON.stringify({ status: "welcome message sent" }), {
+      //       status: 200,
+      //       headers: { "Content-Type": "application/json", ...corsHeaders }
       //     });
       //   }
       // }
@@ -148,7 +149,7 @@ export default {
 
       if (text?.startsWith("/tugas") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
-          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env["db-tugas"]);
+          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env.tugas);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -157,7 +158,7 @@ export default {
 
       if (text === "/list-tugas" && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
-          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env["db-tugas"]);
+          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env.tugas);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -167,7 +168,7 @@ export default {
       if (text?.startsWith("/hapus ") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
           const namaTugas = text.replace("/hapus ", "").trim();
-          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaTugas, env["db-tugas"]);
+          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaTugas, env.tugas);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -186,7 +187,7 @@ export default {
       if (text?.startsWith("/ai") && chatId && reply_to) {
         try {
           // Ambil semua data assignments dari D1 dan jadikan context
-          const db = env["db-tugas"];
+          const db = env.tugas;
           const manager = new D1AssignmentManager(db);
           const assignments = await manager.getAllAssignments();
           const contextString = assignments.map(a =>
@@ -268,4 +269,4 @@ export default {
       console.error("Assignment cron failed:", error);
     }
   },
-};
+} satisfies ExportedHandler<Env>;

@@ -10,13 +10,46 @@
 	"observability": {
 		"enabled": true
 	},
-	"secrets_store_secrets": [],
-	"kv_namespaces": [],
-	"d1_databases": [],
+	"secrets_store_secrets": [
+		{
+			"binding": "WAHA_KEY",
+			"secret_name": "WAHA_KEY",
+			"store_id": "ffdcad707ea24016be0abf451838d797"
+		},
+		{
+			"binding": "OPENROUTER_KEY",
+			"secret_name": "OPENROUTER_KEY",
+			"store_id": "ffdcad707ea24016be0abf451838d797"
+		},
+		{
+			"binding": "BASE_URL",
+			"secret_name": "BASE_URL",
+			"store_id": "ffdcad707ea24016be0abf451838d797"
+		},
+		{
+			"binding": "SESSION",
+			"secret_name": "SESSION",
+			"store_id": "ffdcad707ea24016be0abf451838d797"
+		},
+
+	],
+	"kv_namespaces": [
+		{
+			"binding": "kv_database",
+			"id": "c5f18428372246bfb2d32c3311a6b372"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "tugas",
+			"database_name": "tugas",
+			"database_id": "18633270-06e8-41cc-aa6e-39dff49ff652"
+		}
+	],
 	"triggers": {
 		// Runs every day at 01:45 GMT+7 (which is 18:45 UTC the previous day)
 		"crons": ["46 19 * * *"]
-	},
+	}
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
