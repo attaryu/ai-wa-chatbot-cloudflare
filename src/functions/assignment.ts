@@ -45,10 +45,9 @@ export async function handleTambahTugas(
 
   if (db) {
     try {
-      console.log('Database object received:', !!db);
       const manager = new D1AssignmentManager(db);
       // await manager.initializeTable();
-      
+
       const data: AssignmentData = {
         id: generateId(),
         mata_kuliah: namaMataKuliah, // Sesuaikan dengan schema database
@@ -57,9 +56,7 @@ export async function handleTambahTugas(
         participant,
         deadline: formattedDeadline
       };
-      console.log('Attempting to save assignment:', data);
       await manager.saveAssignment(data);
-      console.log('Assignment saved successfully');
     } catch (error) {
       console.error('Error saving assignment to D1:', error);
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, `❌ Error menyimpan tugas: ${error}`);
@@ -124,13 +121,13 @@ export async function handleHapusTugas(
   try {
     const manager = new D1AssignmentManager(db);
     // await manager.initializeTable();
-    
+
     // Cek apakah tugas ada
     const exists = await manager.assignmentExists(namaTugas);
     if (!exists) {
       return await sendMessage(baseUrl, session, apiKey, chatId, reply_to, "❌ Tugas tidak ditemukan");
     }
-    
+
     // Hapus tugas
     const deleted = await manager.deleteAssignmentByMataKuliah(namaTugas);
     if (deleted) {
@@ -188,13 +185,13 @@ function formatDateForDatabase(dateInput: string): string | null {
     // Expected format: DD/MM/YYYY
     const parts = dateInput.split('/');
     if (parts.length !== 3) return null;
-    
+
     const day = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10);
     const year = parseInt(parts[2], 10);
-    
+
     if (day < 1 || day > 31 || month < 1 || month > 12 || year < 2020) return null;
-    
+
     // Format ke YYYY-MM-DD HH:MM:SS (set waktu ke 23:59:59 sebagai deadline)
     const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} 23:59:59`;
     return formattedDate;
@@ -208,11 +205,11 @@ function formatDateForDatabase(dateInput: string): string | null {
 function formatDateForDisplay(dbDate: string): string {
   try {
     const date = new Date(dbDate);
-    return date.toLocaleDateString('id-ID', { 
+    return date.toLocaleDateString('id-ID', {
       weekday: 'long',
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   } catch (error) {
     return dbDate; // fallback ke format asli jika error
@@ -262,7 +259,7 @@ export async function basicCommands(
 ) {
   // Gunakan custom response jika ada, atau ambil dari predefined responses
   const responseText = customResponse || COMMAND_RESPONSES[command];
-  
+
   if (!responseText) {
     throw new Error(`Command "${command}" not found and no custom response provided`);
   }

@@ -50,8 +50,7 @@ export async function aiCronTest(env: any) {
     });
 
     const apiResult = await apiResp.text();
-    console.log('AI Cron Test - Message sent successfully:', apiResult);
-    
+
     return { status: "sent", result: apiResult };
   } catch (error) {
     console.error('AI Cron Test - Error:', error);

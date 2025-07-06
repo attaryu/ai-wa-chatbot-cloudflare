@@ -46,10 +46,10 @@ export default {
       try {
         data = await request.json();
       } catch {
-        return new Response("Invalid JSON", { status: 400, headers: corsHeaders });
+				return new Response("Invalid JSON", { status: 400, headers: corsHeaders });
       }
 
-      console.log("Received event:", JSON.stringify(data));
+
 
       // // Handle group join events
       // if (data.event === "group.v2.participants") {
@@ -149,7 +149,7 @@ export default {
 
       if (text?.startsWith("/tugas") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
-          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env.tugas);
+          const result = await handleTambahTugas(baseUrl, session, APIkey, chatId, reply_to, text, participant, env.DB);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -158,7 +158,7 @@ export default {
 
       if (text === "/list-tugas" && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
-          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env.tugas);
+          const result = await handleLihatTugas(baseUrl, session, APIkey, chatId, reply_to, participant, env.DB);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -168,7 +168,7 @@ export default {
       if (text?.startsWith("/hapus ") && chatId && reply_to && PersonalIds.includes(participant)) {
         try {
           const namaTugas = text.replace("/hapus ", "").trim();
-          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaTugas, env.tugas);
+          const result = await handleHapusTugas(baseUrl, session, APIkey, chatId, reply_to, namaTugas, env.DB);
           return new Response(JSON.stringify(result), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -187,7 +187,7 @@ export default {
       if (text?.startsWith("/ai") && chatId && reply_to) {
         try {
           // Ambil semua data assignments dari D1 dan jadikan context
-          const db = env.tugas;
+          const db = env.DB;
           const manager = new D1AssignmentManager(db);
           const assignments = await manager.getAllAssignments();
           const contextString = assignments.map(a =>
@@ -264,7 +264,6 @@ export default {
     try {
       // Assignment reminder cron - hanya kirim reminder tugas yang deadline hari ini dan hapus yang sudah lewat
       await assignmentCron.scheduled(event, env, ctx);
-      console.log("Assignment cron executed successfully");
     } catch (error) {
       console.error("Assignment cron failed:", error);
     }
