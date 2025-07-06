@@ -30,20 +30,19 @@
 			"binding": "SESSION",
 			"secret_name": "SESSION",
 			"store_id": "ffdcad707ea24016be0abf451838d797"
-		},
-
+		}
 	],
 	"kv_namespaces": [
 		{
-			"binding": "kv_database",
+			"binding": "KV_BINDING",
 			"id": "c5f18428372246bfb2d32c3311a6b372"
 		}
 	],
 	"d1_databases": [
 		{
-			"binding": "tugas",
+			"binding": "DB",
 			"database_name": "tugas",
-			"database_id": "18633270-06e8-41cc-aa6e-39dff49ff652"
+			"database_id": "993872bc-3a73-485a-b5c5-3f5a75fd1252"
 		}
 	],
 	"triggers": {
