@@ -4,62 +4,19 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "ai-chatbot",
+	"name": "lecture-task-bot",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-06-20",
 	"observability": {
 		"enabled": true
 	},
-	"secrets_store_secrets": [
-		{
-			"binding": "api_key",
-			"store_id": "923639bd67b74b318ee571269fdae85d",
-			"secret_name": "x_api_key"
-		},
-		{
-			"binding": "base_url_name",
-			"store_id": "923639bd67b74b318ee571269fdae85d",
-			"secret_name": "base_url"
-		},
-		{
-			"binding": "session_name",
-			"store_id": "923639bd67b74b318ee571269fdae85d",
-			"secret_name": "session"
-		},
-		{
-			"binding": "openrouter_key",
-			"store_id": "923639bd67b74b318ee571269fdae85d",
-			"secret_name": "openrouter_api_key"
-		}
-	],
-
-	/**
-	 * KV Namespaces
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
-	 */
-	"kv_namespaces": [
-		{
-			"binding": "kv-database",
-			"id": "d18eb440e2cd44e0aef2780f6655f46f",
-		}
-	],
-
-	/**
-	 * Cron Triggers
-	 * https://developers.cloudflare.com/workers/configuration/cron-triggers/
-	 */
-"triggers": {
-	// Runs every day at 01:45 GMT+7 (which is 18:45 UTC the previous day)
-	"crons": ["46 19 * * *"]
-},
-
-  "d1_databases": [
-	{
-	  "binding": "db-tugas",
-	  "database_name": "tugas-kelas",
-	  "database_id": "e89b04e7-683f-4b08-be1b-a0e554d8b1f8"
-	}
-  ]
+	"secrets_store_secrets": [],
+	"kv_namespaces": [],
+	"d1_databases": [],
+	"triggers": {
+		// Runs every day at 01:45 GMT+7 (which is 18:45 UTC the previous day)
+		"crons": ["46 19 * * *"]
+	},
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

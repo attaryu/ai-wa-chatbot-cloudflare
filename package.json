@@ -4,21 +4,21 @@
 	"private": true,
 	"scripts": {
 		"deploy": "wrangler deploy",
-		"dev": "wrangler dev",
+		"dev": "wrangler types && wrangler dev",
 		"start": "wrangler dev",
 		"test": "vitest",
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.8.19",
-		"typescript": "^5.5.2",
-		"vitest": "~3.2.0",
-		"wrangler": "^4.21.0"
+		"@cloudflare/vitest-pool-workers": "^0.8.49",
+		"typescript": "^5.8.3",
+		"vitest": "~3.2.4",
+		"wrangler": "^4.23.0"
 	},
 	"dependencies": {
 		"@openrouter/ai-sdk-provider": "^0.7.2",
 		"agents": "^0.0.101",
 		"ai": "^4.3.16",
-		"zod": "^3.25.73"
+		"zod": "^3.25.74"
 	}
 }
